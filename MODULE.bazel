@@ -1,0 +1,47 @@
+module(
+    name = "rules_k8s",
+    version = "0.0.1",
+)
+
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "platforms", version = "0.0.10")
+
+bazel_dep(name = "buildifier_prebuilt", version = "7.3.1", dev_dependency = True, repo_name = "buildtools")
+
+# Supported execution platforms for pre-built binaries.
+# TODO: Figure out how to dedupe this list with `private.bzl`.
+execution_platforms = [
+    "aarch64-linux",
+    "aarch64-macos",
+    "x86_64-linux",
+    "x86_64-macos",
+]
+
+# Manually download prebuilt 'kubectl' binary:
+
+http_file = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
+
+# https://github.com/kubernetes/kubernetes/releases
+kubernetes_version = "v1.31.2"
+
+kubectl_integrity = {
+    "aarch64-linux": "sha384-EI3XWAb35lxGxdpopPjCsuy3IjUcgnGgQPld4XG+BQnjlV9/OTR8B3JmVSwJoMiM",
+    "aarch64-macos": "sha384-g3X1owXXsQJYfrHDU7h5DxGin83nWwr1cNuWo3wTvtgZgh/H4GEoV7aWEPn/fWms",
+    "x86_64-linux": "sha384-d1TmGRQ3gIee3Ya0YjtelVtr/iSRXLdgsbn97qlm1U9oexLj8uHm6xn1QmVkiDmz",
+    "x86_64-macos": "sha384-7DXAvTpWgUW+vg0m02pcTZ8GIdVxOw3L8dT73xPi7g6ZYZ8yD6CkkG+f5iXhK/sT",
+}
+
+[http_file(
+    name = "kubectl-" + exe_platform,
+    url = "https://dl.k8s.io/release/{version}/bin/{platform}/kubectl".format(
+        version = kubernetes_version,
+        platform = {
+            "aarch64-linux": "linux/arm64",
+            "aarch64-macos": "darwin/arm64",
+            "x86_64-linux": "linux/amd64",
+            "x86_64-macos": "darwin/amd64",
+        }[exe_platform],
+    ),
+    executable = True,
+    integrity = kubectl_integrity[exe_platform],
+) for exe_platform in execution_platforms]

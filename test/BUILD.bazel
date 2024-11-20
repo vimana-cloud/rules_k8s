@@ -1,0 +1,19 @@
+load("@bazel_skylib//rules:build_test.bzl", "build_test")
+load("//:private.bzl", "execution_platforms")
+
+# List of platform-dependent binaries,
+# where `{}` is a placeholder for the platform name.
+binaries = [
+    "@kubectl-{}//file",
+]
+
+# Download all remote files for all platforms
+# to make sure the checksums are correct in MODULE.bazel.
+build_test(
+    name = "fetch-all-remotes",
+    targets = [
+        binary.format(platform)
+        for binary in binaries
+        for platform in execution_platforms
+    ],
+)

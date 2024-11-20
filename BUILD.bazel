@@ -1,0 +1,25 @@
+load("@bazel_skylib//lib:selects.bzl", "selects")
+load("@bazel_skylib//rules:native_binary.bzl", "native_binary")
+load(":private.bzl", "execution_platforms", "format_platform")
+
+exports_files([
+    "test-runner.sh",
+])
+
+# Execution-platform-specific aliases for pre-built binaries:
+# Some custom rules need Bash, so Windows is out for now.
+# Pre-built binaries might be available for other CPU's.
+
+[selects.config_setting_group(
+    name = "exe-" + platform,
+    match_all = [
+        "@platforms//cpu:" + platform.split("-")[0],
+        "@platforms//os:" + platform.split("-")[1],
+    ],
+) for platform in execution_platforms]
+
+native_binary(
+    name = "kubectl",
+    src = format_platform("@kubectl-{}//file"),
+    visibility = ["//visibility:public"],
+)

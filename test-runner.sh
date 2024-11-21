@@ -28,12 +28,6 @@ then
   exit 1
 fi
 
-if ! which nc > /dev/null
-then
-  echo >&2 "This test uses 'nc' (netcat) to verify port bindings. Make sure it's installed."
-  exit 1
-fi
-
 # Path to kubectl binary.
 kubectl='{{KUBECTL}}'
 # JSON-encoded array of paths to initial K8s object definitions (YAML files).
@@ -106,11 +100,11 @@ namespace="test-$(uuidgen)"
     done
 
     # Port-forwarding can take a bit of time to set up.
-    # Use netcat to poll each local port until it becomes available.
+    # Poll each local port until it becomes available.
     <<< "$port_forward" jq --raw-output 'to_entries[] | .value[] | split(":")[0]' \
       | while read -r port
     do
-      until nc --zero localhost "$port"
+      until (echo > "/dev/tcp/localhost/$port") 2> /dev/null
       do sleep 0.5s
       done
     done
@@ -129,6 +123,6 @@ namespace="test-$(uuidgen)"
 
   # Might as well clean up the temporary file.
   rm "$tmp_hosts"
-  
+
   exit "$test_result"
 }

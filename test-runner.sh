@@ -44,6 +44,9 @@ port_forward='{{PORT-FORWARD}}'
 hosts='{{HOSTS}}'
 # Path to test executable.
 test='{{TEST}}'
+# Path to directory where artifacts should be stored.
+# https://bazel.build/reference/test-encyclopedia#initial-conditions
+artifacts="${TEST_UNDECLARED_OUTPUTS_DIR}"
 
 # kubectl will look for a client config
 # based on inherited environment variables `KUBECONFIG` and `HOME`.
@@ -75,6 +78,17 @@ namespace="test-$(uuidgen)"
     done
   }
 
+  # Print logs from every pod to the test log
+  "$kubectl" --namespace="$namespace" get pods --output=name | while read -r pod
+  do
+    # First wait for each pod to be ready.
+    "$kubectl" --namespace="$namespace" wait --for=condition=Ready "$pod"
+    # Continuously print logs in the background. It will stop when the namespace is deleted.
+    # Store them in the artifacts directory in a text file name after the pod (minus the 'pod/' prefix).
+    "$kubectl" --namespace="$namespace" logs --follow --all-containers "$pod" \
+      > "${artifacts}/${pod:4}.logs.txt" &
+  done
+
   # Set up port forwarding, if configured.
   [ "$port_forward" = '{}' ] && echo >&2 "No port-forwarding configured." || {
     # Use `jq` to denormalize the JSON-encoded object:
@@ -87,22 +101,7 @@ namespace="test-$(uuidgen)"
       # Keys and values are printed on separate lines,
       # so we know that the total number of lines is a multiple of 2.
       read -r mapping
-
-      # First wait for the resource to be ready, otherwise port-forwarding fails.
-      # Waiting normally only works for pods, so to support other resource types,
-      # emulate the logic from the port-forward command to find an attachable pod for an object:
-      # https://github.com/kubernetes/kubernetes/blob/v1.31.2/staging/src/k8s.io/kubectl/pkg/cmd/portforward/portforward.go#L345.
-      # First, get the selector for the object (as a JSON map).
-      selector="$("$kubectl" --namespace="$namespace" get "$resource" --output=jsonpath='{.spec.selector}')"
-      # Convert the selector to command-line format for kubectl (comma-separated '<key>=<value>' pairs).
-      selector="$(<<< "$selector" jq --raw-output 'to_entries | map("\(.key)=\(.value)") | join(",")')"
-      # Pick an arbitrary pod using the selector.
-      pod="$("$kubectl" --namespace="$namespace" get pods --selector="$selector" --output=name | head --lines=1)"
-      # Wait for it to be ready.
-      "$kubectl" --namespace="$namespace" wait --for=condition=Ready "$pod"
-
-      # Port-forward in the background now that we know at least 1 pod is ready.
-      # It will stop when the namespace is deleted.
+      # Port-forward in the background. It will stop when the namespace is deleted.
       "$kubectl" --namespace="$namespace" port-forward "$resource" "$mapping" &
     done
 

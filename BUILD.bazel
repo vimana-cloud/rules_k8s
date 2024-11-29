@@ -23,3 +23,9 @@ native_binary(
     src = format_platform("@kubectl-{}//file"),
     visibility = ["//visibility:public"],
 )
+
+native_binary(
+    name = "kustomize",
+    src = format_platform("@kustomize-{}//:kustomize"),
+    visibility = ["//visibility:public"],
+)

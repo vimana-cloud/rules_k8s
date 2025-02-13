@@ -29,3 +29,9 @@ native_binary(
     src = format_platform("@kustomize-{}//:kustomize"),
     visibility = ["//visibility:public"],
 )
+
+native_binary(
+    name = "crictl",
+    src = format_platform("@crictl-{}//:crictl"),
+    visibility = ["//visibility:public"],
+)

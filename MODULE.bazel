@@ -37,6 +37,16 @@ kustomize_integrity = {
     "x86_64-macos": "sha384-2DQtUwEUOGKeTJbWKQahWjk9C9MBCndjsP0EASrNozBBK9I7JFlwUHpyY7I5zcmy",
 }
 
+# https://github.com/kubernetes-sigs/cri-tools/releases
+cri_tools_version = "1.32.0"
+
+crictl_integrity = {
+    "aarch64-linux": "sha384-IdQKFIqnDJf7FW0ghTx/e5C8rEUN/CKrOgUp+i2hRhwuyo8cwP92xzRUPgk099Aa",
+    "aarch64-macos": "sha384-F9X0pfy11Sy8eiOuXP8+z8c0dxyKLIZJ0VGTyaERF+2HgKonf5qWBNPtPY+zwBb+",
+    "x86_64-linux": "sha384-QeIQzwO9jKnAxfyGfY1caKIr9nX6WpQ9lxNsVHvFag57Pq5W7RUlG5QCKg+czTlC",
+    "x86_64-macos": "sha384-1FBOnDDMEP45IH1twFgYW2YdHIcRCseeiEc6cuW7av9P56yO3rJ9xXiWyvXTssxe",
+}
+
 # Manually download prebuilt binaries:
 
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
@@ -75,5 +85,25 @@ exports_files(
             "x86_64-macos": "darwin_amd64",
         }[exe_platform],
         version = kustomize_version,
+    ),
+) for exe_platform in execution_platforms]
+
+[http_archive(
+    name = "crictl-" + exe_platform,
+    build_file_content = """
+exports_files(
+    ["crictl"],
+    visibility = ["//visibility:public"],
+)
+""",
+    integrity = crictl_integrity[exe_platform],
+    url = "https://github.com/kubernetes-sigs/cri-tools/releases/download/v{version}/crictl-v{version}-{platform}.tar.gz".format(
+        platform = {
+            "aarch64-linux": "linux-arm64",
+            "aarch64-macos": "darwin-arm64",
+            "x86_64-linux": "linux-amd64",
+            "x86_64-macos": "darwin-amd64",
+        }[exe_platform],
+        version = cri_tools_version,
     ),
 ) for exe_platform in execution_platforms]

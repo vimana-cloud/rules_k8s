@@ -6,6 +6,7 @@ load("//:private.bzl", "execution_platforms")
 binaries = [
     "@kubectl-{}//file",
     "@kustomize-{}//:kustomize",
+    "@crictl-{}//:crictl",
 ]
 
 # Download all remote files for all platforms

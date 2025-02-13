@@ -5,6 +5,7 @@ load("//:private.bzl", "execution_platforms")
 # where `{}` is a placeholder for the platform name.
 binaries = [
     "@kubectl-{}//file",
+    "@istio-{}//:istioctl",
     "@kustomize-{}//:kustomize",
     "@crictl-{}//:crictl",
 ]

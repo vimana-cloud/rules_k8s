@@ -30,6 +30,16 @@ kubectl_integrity = {
     "x86_64-macos": "sha384-7DXAvTpWgUW+vg0m02pcTZ8GIdVxOw3L8dT73xPi7g6ZYZ8yD6CkkG+f5iXhK/sT",
 }
 
+# https://github.com/istio/istio/releases
+istio_version = "1.23.5"
+
+istio_integrity = {
+    "aarch64-linux": "sha384-YEOJzfY8nllLjlPHQzKu1c8Dz8csLJrh79ItPLCgBq26ZfbkmzMjUZT5YMsEKAiY",
+    "aarch64-macos": "sha384-7T2K4EGdGL1DoUevBreMcPSg2zAdf2D2fHAVcyGFnBDd1k9qTSOJKXpgCGbklQuz",
+    "x86_64-linux": "sha384-/1jw6GBYFfm5klFl+UjQNFRiQEKf8vEF4Y4OvVkR22YW7KjF/9UmDpi5Lvc4kM59",
+    "x86_64-macos": "sha384-gKqehKzsn+Sm8z9q86r7fYhxf+1FMZCgkDyn2RoxEhc6TsbqLmyRYY5CheO58R6x",
+}
+
 # https://github.com/kubernetes-sigs/kustomize/releases
 kustomize_version = "v5.5.0"
 
@@ -76,6 +86,27 @@ http_file = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_
             "x86_64-macos": "darwin/amd64",
         }[exe_platform],
         version = kubernetes_version,
+    ),
+) for exe_platform in execution_platforms]
+
+[http_archive(
+    name = "istio-" + exe_platform,
+    build_file_content = """
+alias(
+    name = "istioctl",
+    actual = "istio-{version}/bin/istioctl",
+    visibility = ["//visibility:public"],
+)
+""".format(version = istio_version),
+    integrity = istio_integrity[exe_platform],
+    url = "https://github.com/istio/istio/releases/download/{version}/istio-{version}-{platform}.tar.gz".format(
+        platform = {
+            "aarch64-linux": "linux-arm64",
+            "aarch64-macos": "osx-arm64",
+            "x86_64-linux": "linux-amd64",
+            "x86_64-macos": "osx-amd64",
+        }[exe_platform],
+        version = istio_version,
     ),
 ) for exe_platform in execution_platforms]
 

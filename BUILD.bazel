@@ -25,6 +25,12 @@ native_binary(
 )
 
 native_binary(
+    name = "istioctl",
+    src = format_platform("@istio-{}//:istioctl"),
+    visibility = ["//visibility:public"],
+)
+
+native_binary(
     name = "kustomize",
     src = format_platform("@kustomize-{}//:kustomize"),
     visibility = ["//visibility:public"],

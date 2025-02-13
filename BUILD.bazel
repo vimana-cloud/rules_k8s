@@ -1,6 +1,6 @@
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:native_binary.bzl", "native_binary")
-load(":private.bzl", "execution_platforms", "format_platform")
+load(":private.bzl", "execution_platforms", "format_platform", "format_platform_x86")
 
 exports_files([
     "test-runner.sh",
@@ -33,5 +33,12 @@ native_binary(
 native_binary(
     name = "crictl",
     src = format_platform("@crictl-{}//:crictl"),
+    visibility = ["//visibility:public"],
+)
+
+# Minikube does not yet officially support Arm.
+native_binary(
+    name = "minikube",
+    src = format_platform_x86("@minikube-{}//:minikube"),
     visibility = ["//visibility:public"],
 )

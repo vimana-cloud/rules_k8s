@@ -9,6 +9,12 @@ binaries = [
     "@crictl-{}//:crictl",
 ]
 
+# These binaries are only available on x86, not Arm.
+x86_64_binaries = [
+    "@minikube-x86_64-linux//:minikube",
+    "@minikube-x86_64-macos//:minikube",
+]
+
 # Download all remote files for all platforms
 # to make sure the checksums are correct in MODULE.bazel.
 build_test(
@@ -17,5 +23,5 @@ build_test(
         binary.format(platform)
         for binary in binaries
         for platform in execution_platforms
-    ],
+    ] + x86_64_binaries,
 )

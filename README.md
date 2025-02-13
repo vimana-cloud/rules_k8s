@@ -10,6 +10,16 @@ A Bazel module with tools for working with Kubernetes (K8s).
 - [`//:test.bzl`](test.bzl):
   * `k8s_cluster_test` - Run a test in the context of a running K8s cluster.
 
+## Binaries
+
+Automatically downloads and makes available
+the following pre-built binaries:
+
+- `//:kubectl`
+- `//:kustomize`
+- `//:crictl`
+- `//:minikube` (x86-64 only).
+
 ## Caveats
 
 - Currently works only for the following execution platforms

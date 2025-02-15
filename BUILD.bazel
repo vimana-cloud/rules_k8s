@@ -4,6 +4,7 @@ load(":private.bzl", "execution_platforms", "format_platform", "format_platform_
 
 exports_files([
     "test-runner.sh",
+    "vimana-push.sh",
 ])
 
 # Execution-platform-specific aliases for pre-built binaries:
@@ -46,5 +47,11 @@ native_binary(
 native_binary(
     name = "minikube",
     src = format_platform_x86("@minikube-{}//:minikube"),
+    visibility = ["//visibility:public"],
+)
+
+sh_binary(
+    name = "vimana-push",
+    srcs = ["vimana-push.sh"],
     visibility = ["//visibility:public"],
 )

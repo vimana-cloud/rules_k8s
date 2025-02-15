@@ -31,3 +31,7 @@ def format_platform_x86(template):
         },
         no_match_error = "Only (Linux | MacOS) on x86-64 currently supported",
     )
+
+def bash_quote(word):
+    """ Quote a word in Bash. """
+    return "'{}'".format(word.replace("'", "'\"'\"'"))

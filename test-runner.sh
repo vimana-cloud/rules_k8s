@@ -38,9 +38,21 @@ port_forward='{{PORT-FORWARD}}'
 hosts='{{HOSTS}}'
 # Path to test executable.
 test='{{TEST}}'
+# JSON-encoded array of paths to setup executables.
+setup='{{SETUP}}'
+
 # Path to directory where artifacts should be stored.
 # https://bazel.build/reference/test-encyclopedia#initial-conditions
 artifacts="${TEST_UNDECLARED_OUTPUTS_DIR}"
+
+# Use `jq` to iterate over the JSON-encoded array of setup executables.
+<<< "$setup" jq --raw-output '.[]' | while read -r action
+do
+  "$action" || {
+    echo >&2 "Failed while running test setup action."
+    exit 1
+  }
+done
 
 # kubectl will look for a client config
 # based on inherited environment variables `KUBECONFIG` and `HOME`.
@@ -48,7 +60,7 @@ artifacts="${TEST_UNDECLARED_OUTPUTS_DIR}"
 # https://stackoverflow.com/a/13864829/5712883
 [ -z "${KUBECONFIG+x}" ] \
   && echo >&2 "Using default kubernetes client config '$HOME/.kube/config'." \
-  || echo >&2 "Using inherited \`\$KUBECONFIG\` '$KUBECONFIG'."
+  || echo >&2 "Inheriting KUBECONFIG='$KUBECONFIG'."
 
 # Create a new K8s test namespace with a unique, randomized name.
 namespace="test-$(uuidgen)"

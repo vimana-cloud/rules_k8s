@@ -1,8 +1,16 @@
 # Rules and macros for running tests in the context of a running K8s cluster.
 
 def _k8s_cluster_test_impl(ctx):
+    # Gather all the setup executables and dependencies.
+    setup = []
+    setup_runfiles = []
+    for action in ctx.attr.setup:
+        action = action[DefaultInfo]
+        setup.append(action.files_to_run.executable.short_path)
+        setup_runfiles.append(action.default_runfiles)
+
     # Parameterize the runner by expanding the template.
-    runner = ctx.actions.declare_file(ctx.label.name + ".runner.sh")
+    runner = ctx.actions.declare_file(ctx.label.name)
     ctx.actions.expand_template(
         template = ctx.file._runner_template,
         output = runner,
@@ -12,12 +20,14 @@ def _k8s_cluster_test_impl(ctx):
             "{{PORT-FORWARD}}": json.encode(ctx.attr.port_forward),
             "{{HOSTS}}": json.encode(ctx.attr.hosts),
             "{{TEST}}": ctx.executable.test.short_path,
+            "{{SETUP}}": json.encode(setup),
         },
         is_executable = True,
     )
     runfiles = \
         ctx.runfiles(files = ctx.files._kubectl_bin + ctx.files.objects) \
-            .merge(ctx.attr.test[DefaultInfo].default_runfiles)
+            .merge(ctx.attr.test[DefaultInfo].default_runfiles) \
+            .merge_all(setup_runfiles)
     return [
         DefaultInfo(executable = runner, runfiles = runfiles),
         # Inherit `KUBECONFIG` and `HOME` from the host environment
@@ -51,6 +61,9 @@ k8s_cluster_test = rule(
                   " The contents of /etc/hosts will be overridden with this configuration" +
                   " for the duration of the test." +
                   " Can be used with `port_forward` to enable TLS-encrypted access to services.",
+        ),
+        "setup": attr.label_list(
+            doc = "Executable targets to run before each test run.",
         ),
         "_runner_template": attr.label(
             default = "//:test-runner.sh",

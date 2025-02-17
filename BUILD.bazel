@@ -5,6 +5,7 @@ load(":private.bzl", "execution_platforms", "format_platform", "format_platform_
 exports_files([
     "test-runner.sh",
     "vimana-push.sh",
+    "sha256-substitute.sh",
 ])
 
 # Execution-platform-specific aliases for pre-built binaries:

@@ -1,11 +1,12 @@
+load(":private.bzl", "format_placeholder", "write_with_sha256_substitution")
+
 # Rules for creating and managing K8s resource objects.
-load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load(":registry.bzl", "vimana_push")
 
 # Just pick some random port to be the "container port" (which is virtual anyway).
 _GRPC_CONTAINER_PORT = 61803
 
-def k8s_vimana_domain(name, registry, id, aliases=None, services=None, reflection=False, cluster_registry=None):
+def k8s_vimana_domain(name, registry, id, aliases = None, services = None, reflection = False, cluster_registry = None):
     """
     Statically build, push and deploy an entire Vimana domain.
     Used to bootstrap a cluster with the API and any other pre-existing services.
@@ -32,8 +33,10 @@ def k8s_vimana_domain(name, registry, id, aliases=None, services=None, reflectio
     services = services or {}
     cluster_registry = cluster_registry or registry
 
-    resources = []
     rules = []
+    placeholder = 0
+    names = []
+    resources = []
     for service_name, components in services.items():
         backends = []
         for component in components:
@@ -54,10 +57,17 @@ def k8s_vimana_domain(name, registry, id, aliases=None, services=None, reflectio
                 "vimana.host/service": service_name,
                 "vimana.host/version": component.version,
             }
+
+            # The canonical component name cannot be used for `metadata.name` as-is
+            # because it's not a valid DNS fragment.
+            # Instead, keep track of the name and leave a placeholder
+            # so we can substitute in a real hash value in the execution phase.
             component_metadata = {
-                "name": "{}:{}@{}".format(id, service_name, component.version),
+                "name": format_placeholder(placeholder),
                 "labels": component_labels,
             }
+            names.append("{}:{}@{}".format(id, service_name, component.version))
+            placeholder += 1
 
             # It's called a 'Service' resource but it represents a Vimana component.
             # https://kubespec.dev/v1/Service
@@ -86,23 +96,26 @@ def k8s_vimana_domain(name, registry, id, aliases=None, services=None, reflectio
                 "metadata": component_metadata,
                 "spec": {
                     "replicas": 1,
-                    "selector": { "matchLabels": component_labels },
+                    "selector": {"matchLabels": component_labels},
                     "template": {
-                        "metadata": { "labels": component_labels },
+                        "metadata": {"labels": component_labels},
                         "spec": {
-                          "runtimeClassName": "workd-runtime-class",
-                          "serviceAccountName": component.service_account,
-                          # Workd pods have a single container, called 'app'.
-                          "containers": [{
-                              "name": "app",
-                              "image": "{}/{}/{}:{}".format(
-                                  cluster_registry, id, _hexify(service_name), component.version,
-                              ),
-                              # TODO: Determine testability implications of image pull policy.
-                              # "imagePullPolicy": "Always",
-                              "ports": [{"containerPort": _GRPC_CONTAINER_PORT}],
-                              "env": component.environment,
-                          }],
+                            "runtimeClassName": "workd-runtime-class",
+                            "serviceAccountName": component.service_account,
+                            # Workd pods have a single container, called 'app'.
+                            "containers": [{
+                                "name": "app",
+                                "image": "{}/{}/{}:{}".format(
+                                    cluster_registry,
+                                    id,
+                                    _hexify(service_name),
+                                    component.version,
+                                ),
+                                # TODO: Determine testability implications of image pull policy.
+                                # "imagePullPolicy": "Always",
+                                "ports": [{"containerPort": _GRPC_CONTAINER_PORT}],
+                                "env": component.environment,
+                            }],
                         },
                     },
                 },
@@ -129,33 +142,37 @@ def k8s_vimana_domain(name, registry, id, aliases=None, services=None, reflectio
         "apiVersion": "gateway.networking.k8s.io/v1",
         "kind": "GRPCRoute",
         "metadata": {
-          "name": id,
-          "labels": {
-            "vimana.host/domain": id,
-          },
+            "name": id,
+            "labels": {
+                "vimana.host/domain": id,
+            },
         },
         "spec": {
-          # All routes are parented by the global gateway.
-          "parentRefs": [{"name": "vimana-gateway"}],
-          # One hostname for the canonical domain and one for each alias.
-          "hostnames": ["{}.app.vimana.host".format(id)] + aliases,
-          "rules": rules,
+            # All routes are parented by the global gateway.
+            "parentRefs": [{"name": "vimana-gateway"}],
+            # One hostname for the canonical domain and one for each alias.
+            "hostnames": ["{}.app.vimana.host".format(id)] + aliases,
+            "rules": rules,
         },
     })
 
     # One buildable K8s resource file for the overall domain.
-    write_file(
+    write_with_sha256_substitution(
         name = name,
         out = name + ".json",
         # Print one JSON resource per line.
         content = [json.encode(resource) for resource in resources],
+        # Forward canonical component names to the execution phase
+        # so they can be hashed with SHA-256.
+        substitutes = names,
     )
 
-def k8s_vimana_component(name, version, weight, module, metadata, environment=None, service_account=""):
+def k8s_vimana_component(name, version, weight, module, metadata, environment = None, service_account = ""):
     """
     Return a component object that can be used with `k8s_vimana_domain`.
     `environment` should be a list of objects returned by `env_from_field_ref` or similar functions.
     """
+
     # Just save all the info. It's processed in `k8s_vimana_domain`.
     return struct(
         name = name,
@@ -169,6 +186,7 @@ def k8s_vimana_component(name, version, weight, module, metadata, environment=No
 
 def env_from_field_ref(name, field_path):
     """ Return an EnvVar object loading the value from a field reference. """
+
     # https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#envvar-v1-core
     return {
         "name": name,
@@ -191,7 +209,7 @@ def k8s_secret_tls(name, key, cert):
         srcs = [key, cert],
     )
 
-def _kubectl_create(name, cmd, srcs=None):
+def _kubectl_create(name, cmd, srcs = None):
     """ Convenience method for generating a JSON resource with `kubectl create`. """
     srcs = srcs or []
     native.genrule(

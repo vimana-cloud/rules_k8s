@@ -1,18 +1,18 @@
 # Rule to push Vimana Wasm "containers" to a container registry.
-load(":private.bzl", "bash_quote")
+load("@bazel_skylib//lib:shell.bzl", "shell")
 
 def _vimana_push_impl(ctx):
     runner = ctx.actions.declare_file(ctx.label.name)
     ctx.actions.write(
         output = runner,
         content = "#!/bin/env bash\n{} {} {} {} {} {} {}".format(
-            bash_quote(ctx.file._vimana_push.short_path),
-            bash_quote(ctx.attr.registry),
-            bash_quote(ctx.attr.domain_id),
-            bash_quote(ctx.attr.service),
-            bash_quote(ctx.attr.version),
-            bash_quote(ctx.file.component.short_path),
-            bash_quote(ctx.file.metadata.short_path),
+            shell.quote(ctx.file._vimana_push.short_path),
+            shell.quote(ctx.attr.registry),
+            shell.quote(ctx.attr.domain_id),
+            shell.quote(ctx.attr.service),
+            shell.quote(ctx.attr.version),
+            shell.quote(ctx.file.component.short_path),
+            shell.quote(ctx.file.metadata.short_path),
         ),
         is_executable = True,
     )

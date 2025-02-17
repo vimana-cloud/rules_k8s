@@ -14,10 +14,12 @@ x86_64_platforms = [
     "x86_64-linux",
     "x86_64-macos",
 ]
+
 aarch64_platforms = [
     "aarch64-linux",
     "aarch64-macos",
 ]
+
 execution_platforms = x86_64_platforms + aarch64_platforms
 
 # https://github.com/kubernetes/kubernetes/releases

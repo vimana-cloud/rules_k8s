@@ -49,7 +49,7 @@ k8s_cluster_test = rule(
         "objects": attr.label_list(
             doc = "Initial Kubernetes API objects defined in YAML files." +
                   " Each object is created before the test is started.",
-            allow_files = [".yaml"],
+            allow_files = [".json", ".yaml"],
         ),
         "port_forward": attr.string_list_dict(
             doc = "Port forwarding to cluster resources." +

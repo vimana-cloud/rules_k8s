@@ -38,8 +38,8 @@ def format_placeholder(number):
     # This is pretty hacky,
     # but Starlark doesn't make it easy to pass rich information
     # from the analysis phase to the execution phase.
-    # Just rely on the improbability of many tildes appearing naturally in the wild.
-    return "~~~~{}~~~~".format(number)
+    # Just rely on the improbability of tildes.
+    return "{{~{}~}}".format(number)
 
 def _write_with_sha256_substitution_impl(ctx):
     # Start by writing the raw content to a file.
@@ -62,6 +62,7 @@ def _write_with_sha256_substitution_impl(ctx):
 
 write_with_sha256_substitution = rule(
     implementation = _write_with_sha256_substitution_impl,
+    # See `sha256-substitute.sh`.
     doc = "Like skylib's write_file, " +
           "but substitutes hashed values in for placeholder codes.",
     attrs = {

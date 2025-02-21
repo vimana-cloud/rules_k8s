@@ -164,6 +164,7 @@ def k8s_vimana_domain(name, registry, id, aliases = None, services = None, refle
         content = [json.encode(resource) for resource in resources],
         # Forward canonical component names to the execution phase
         # so they can be hashed with SHA-256.
+        # See `sha256-substitute.sh`.
         substitutes = names,
     )
 

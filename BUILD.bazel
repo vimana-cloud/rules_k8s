@@ -44,6 +44,16 @@ native_binary(
     visibility = ["//visibility:public"],
 )
 
+# Oddly specific,
+# but when you need to inject a pre-built `crictl` into a Docker container,
+# you probably need the x86-64 Linux version
+# no matter what platform you're on.
+native_binary(
+    name = "crictl-x86_64-linux",
+    src = format_platform("@crictl-{}//:crictl"),
+    visibility = ["//visibility:public"],
+)
+
 # Minikube does not yet officially support Arm.
 native_binary(
     name = "minikube",

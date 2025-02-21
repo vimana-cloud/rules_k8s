@@ -63,11 +63,11 @@ crictl_integrity = {
 }
 
 # https://github.com/vimana-cloud/minikube/releases
-minikube_version = "1.35.0-workd.2"
+minikube_version = "1.35.0-workd.3"
 
 minikube_integrity = {
-    "x86_64-linux": "sha384-fuFdBkChLPg2Ef8xWOOszxl/oE5hXhgRyrxnMkQ84Q/BQqpx7O0L9K9sjC3SPVFv",
-    "x86_64-macos": "sha384-QAPTgOBHHPm098kZHg0/PUxeUzPzt9C/5vKX81N5Ld+fNHluN0e43JrN1pNzAH58",
+    "x86_64-linux": "sha384-SxhZxU+27v71WOHfvyDhvHAPrsJ9F4+0kKtOaELecjanuQdDgFF8Yy7dwq68/T3e",
+    "x86_64-macos": "sha384-lQH3ixrQpMZfrgYtlGoSxniM6H9NKtbuJ/taTsxASIAvhSTXsu7G2gd7dfbPLuRC",
 }
 
 # Manually download prebuilt binaries:

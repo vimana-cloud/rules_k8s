@@ -1,4 +1,4 @@
-#!/bin/env bash
+#!/usr/bin/env bash
 
 # Copy a file template from the input file to the output file,
 # Replacing occurrences of the form `{~N~}`

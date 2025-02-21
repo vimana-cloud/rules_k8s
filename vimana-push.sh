@@ -1,4 +1,4 @@
-#!/bin/env bash
+#!/usr/bin/env bash
 
 # Push a Vimana "container" image,
 # consisting of a component module and matching metadata,
@@ -15,7 +15,7 @@ metadata="$6"   # Serialized container metadata path.
 # so use `od` to hex-encode the service.
 # Flip each pair of nibbles to make it nibble-wise little-endian
 # because that's how workd happens to work.
-service_hex="$(echo -n "$service" | od --address-radix=n --format=x1 | tr -d " \n" | sed 's/\(.\)\(.\)/\2\1/g')"
+service_hex="$(echo -n "$service" | od -A n -t x1 | tr -d " \n" | sed 's/\(.\)\(.\)/\2\1/g')"
 
 # $1: Path to file containing blob to push.
 function push-blob {
@@ -35,7 +35,7 @@ function push-blob {
   digest="sha256:$(sha256sum "$1" | head --bytes=64)"
   put_url="${put_location}&digest=${digest}"
   curl -X PUT --silent --location --fail "$put_url" \
-      -H "Content-Length: $(< "$1" wc --bytes)" \
+      -H "Content-Length: $(< "$1" wc -c)" \
       -H "Content-Type: application/octet-stream" \
       --data-binary "@$1" || {
     echo >&2 "Error putting '$put_url'"
@@ -64,7 +64,7 @@ image_config_digest="$(push-blob "$image_config")" || exit $?
 # $3: MIME media type.
 function print-descriptor {
   echo -n "{\"mediaType\":\"$3\","
-  echo -n  "\"size\":$(< "$1" wc --bytes),"
+  echo -n  "\"size\":$(< "$1" wc -c),"
   echo -n  "\"digest\":\"$2\"}"
 }
 

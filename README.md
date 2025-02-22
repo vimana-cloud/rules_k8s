@@ -1,6 +1,10 @@
-# Kubernetes Bazel Tools
+# Kubernetes Bazel Tools (Vimana-specific)
 
 A Bazel module with tools for working with Kubernetes (K8s).
+This has some general rules, but some are tailor made for [Vimana]
+so this is not exactly a "universal" K8s ruleset.
+
+[Vimana]: https://github.com/vimana-cloud/vimana
 
 ## Rules
 
@@ -23,8 +27,10 @@ the following pre-built binaries:
 - `//:kubectl`
 - `//:kustomize`
 - `//:crictl`
-- `//:minikube` (x86-64 only) - The [Vimana fork](https://github.com/vimana-cloud/minikube)
+- `//:minikube-bin` (x86-64 only) - The [Vimana fork](https://github.com/vimana-cloud/minikube)
   with support for the `workd` container runtime.
+- `//:minikube` - Wrapper script around the raw `:minikube-bin` binary
+  that makes it invoke `:kubectl` when it searches the `PATH` for "kubectl".
 
 ## Caveats
 

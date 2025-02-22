@@ -54,10 +54,25 @@ native_binary(
     visibility = ["//visibility:public"],
 )
 
-# Minikube does not yet officially support Arm.
+# The native minikube binary has to be wrapped in a script (see below).
 native_binary(
-    name = "minikube",
+    name = "minikube-bin",
+    # Minikube does not yet officially support Arm.
     src = format_platform_x86("@minikube-{}//:minikube"),
+    visibility = ["//visibility:public"],
+)
+
+sh_binary(
+    name = "minikube",
+    srcs = ["minikube.sh"],
+    args = [
+        "$(location :minikube-bin)",
+        "$(location :kubectl)",
+    ],
+    data = [
+        ":kubectl",
+        ":minikube-bin",
+    ],
     visibility = ["//visibility:public"],
 )
 

@@ -3,8 +3,8 @@ load(":private.bzl", "format_placeholder", "write_with_sha256_substitution")
 # Rules for creating and managing K8s resource objects.
 load(":registry.bzl", "vimana_push")
 
-# Just pick some random port to be the "container port" (which is virtual anyway).
-_GRPC_CONTAINER_PORT = 61803
+# gRPC services should always use this port number (which is virtual anyway).
+_GRPC_CONTAINER_PORT = 443
 
 def k8s_vimana_domain(name, registry, id, aliases = None, services = None, reflection = False, cluster_registry = None):
     """

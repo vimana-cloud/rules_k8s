@@ -88,7 +88,8 @@ namespace="test-$(uuidgen)"
   "$kubectl" --namespace="$namespace" get pods --output=name | while read -r pod
   do
     # First wait for each pod to be ready.
-    "$kubectl" --namespace="$namespace" wait --for=condition=Ready "$pod"
+    # Would be weird if anything took longer than 10 seconds.
+    "$kubectl" --namespace="$namespace" wait --for=condition=Ready --timeout=10s "$pod"
     # Continuously print logs in the background. It will stop when the namespace is deleted.
     # Store them in the artifacts directory in a text file name after the pod (minus the 'pod/' prefix).
     "$kubectl" --namespace="$namespace" logs --follow --all-containers "$pod" \

@@ -1,8 +1,8 @@
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("//:private.bzl", "execution_platforms")
 
-# List of platform-dependent binaries,
-# where `{}` is a placeholder for the platform name.
+# List of binaries supported on all 4 platforms: (Linux + Mac) × (x86-64 + Arm64).
+# `{}` is a placeholder for the platform name. See `MODULE.bazel`.
 binaries = [
     "@kubectl-{}//file",
     "@istio-{}//:istioctl",
@@ -10,8 +10,10 @@ binaries = [
     "@crictl-{}//:crictl",
 ]
 
-# These binaries are only available on x86, not Arm.
+# These binaries are only available on certain platforms,
+# so hardcode all possible values.
 x86_64_binaries = [
+    "@cni-plugins//:host-local",
     "@minikube-x86_64-linux//:minikube",
     "@minikube-x86_64-macos//:minikube",
 ]

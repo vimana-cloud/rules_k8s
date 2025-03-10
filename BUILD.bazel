@@ -44,13 +44,18 @@ native_binary(
     visibility = ["//visibility:public"],
 )
 
-# Oddly specific,
-# but when you need to inject a pre-built `crictl` into a Docker container,
-# you probably need the x86-64 Linux version
-# no matter what platform you're on.
+# These binaries are expected to be end up in Docker containers,
+# so you probably need the x86-64 / Linux version no matter what the execution platform is:
+
 native_binary(
     name = "crictl-x86_64-linux",
-    src = format_platform("@crictl-{}//:crictl"),
+    src = "@crictl-x86_64-linux//:crictl",
+    visibility = ["//visibility:public"],
+)
+
+native_binary(
+    name = "host-local-x86_64-linux",
+    src = "@cni-plugins-x86_64-linux//:host-local",
     visibility = ["//visibility:public"],
 )
 

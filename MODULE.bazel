@@ -120,7 +120,7 @@ alias(
 ) for exe_platform in execution_platforms]
 
 http_archive(
-    name = "cni-plugins",
+    name = "cni-plugins-x86_64-linux",
     build_file_content = """
 exports_files(
     ["host-local"],

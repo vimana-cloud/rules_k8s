@@ -12,8 +12,8 @@ binaries = [
 
 # These binaries are only available on certain platforms,
 # so hardcode all possible values.
-x86_64_binaries = [
-    "@cni-plugins//:host-local",
+hardcoded_binaries = [
+    "@cni-plugins-x86_64-linux//:host-local",
     "@minikube-x86_64-linux//:minikube",
     "@minikube-x86_64-macos//:minikube",
 ]
@@ -26,5 +26,5 @@ build_test(
         binary.format(platform)
         for binary in binaries
         for platform in execution_platforms
-    ] + x86_64_binaries,
+    ] + hardcoded_binaries,
 )

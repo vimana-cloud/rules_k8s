@@ -5,7 +5,7 @@ def _vimana_push_impl(ctx):
     runner = ctx.actions.declare_file(ctx.label.name)
     ctx.actions.write(
         output = runner,
-        content = "#!/bin/env bash\n{} {} {} {} {} {} {}".format(
+        content = "#!/usr/bin/env bash\n{} {} {} {} {} {} {}".format(
             shell.quote(ctx.file._vimana_push.short_path),
             shell.quote(ctx.attr.registry),
             shell.quote(ctx.attr.domain_id),

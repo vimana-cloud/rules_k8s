@@ -19,6 +19,8 @@ service_hex="$(echo -n "$service" | od -A n -t x1 | tr -d " \n" | sed 's/\(.\)\(
 
 # $1: Path to file containing blob to push.
 function push-blob {
+  path="$1"
+
   # https://specs.opencontainers.org/distribution-spec/#pushing-blobs
   post_url="${registry}/v2/${domain}/${service_hex}/blobs/uploads/"
   # Follow redirects, fail on non-200-range status code,
@@ -30,17 +32,25 @@ function push-blob {
     echo >&2 "Error posting '$post_url'"
     return 1
   }
-  # Annoyingly prints the filename after the hash,
-  # so only keep the first 64 hex characters (32 bytes of raw data = 256 bits).
-  digest="sha256:$(sha256sum "$1" | head --bytes=64)"
-  put_url="${put_location}&digest=${digest}"
+
+  # If the location already includes a query component,
+  # append the digest with `&`. Otherwise, append it with `?`.
+  [[ "$put_location" = *\?* ]] && digest_separator='&' || digest_separator='?'
+  # The location MAY be relative, in which case we must make it absolute.
+  [[ "$put_location" = /* ]] && put_location="${registry}${put_location}"
+
+  # `sha256sum` annoyingly prints the filename after the hash,
+  # so only keep the first 64 hexadecimal characters (representing 32 octets = 256 bits).
+  digest="sha256:$(sha256sum "$path" | head --bytes=64)"
+  put_url="${put_location}${digest_separator}digest=${digest}"
   curl -X PUT --silent --location --fail "$put_url" \
-      -H "Content-Length: $(< "$1" wc -c)" \
+      -H "Content-Length: $(< "$path" wc -c)" \
       -H "Content-Type: application/octet-stream" \
-      --data-binary "@$1" || {
+      --data-binary "@$path" || {
     echo >&2 "Error putting '$put_url'"
     return 2
   }
+
   # Print the digest to "return" it.
   echo "$digest"
 }
@@ -51,7 +61,12 @@ metadata_digest="$(push-blob "$metadata")" || exit $?
 # https://specs.opencontainers.org/image-spec/config/#properties
 # These are the minimum required properties, and they're all ignored.
 image_config="$(mktemp)"
-trap "rm '$image_config'" EXIT  # Delete the teporary file on exit.
+# Delete the teporary file on exit.
+function delete-image-config {
+  rm "$image_config"
+}
+trap delete-image-config EXIT
+
 echo -n '{"architecture":"wasm","os":"workd","rootfs":{"type":"layers","diff_ids":[]}}' \
   > "$image_config"
 image_config_digest="$(push-blob "$image_config")" || exit $?
@@ -67,6 +82,13 @@ function print-descriptor {
   echo -n  "\"size\":$(< "$1" wc -c),"
   echo -n  "\"digest\":\"$2\"}"
 }
+
+manifest="$(mktemp)"
+# Delete all teporary files on exit (overwrites previous trap).
+function delete-temporary-files {
+  rm "$image_config" "$manifest"
+}
+trap delete-temporary-files EXIT
 
 # https://specs.opencontainers.org/image-spec/manifest/#image-manifest
 # Should always result in something that looks like this:
@@ -90,9 +112,6 @@ function print-descriptor {
 #             },
 #         ],
 #     }
-manifest="$(mktemp)"
-# Delete all teporary files on exit (overwrites previous trap).
-trap "rm '$image_config' '$manifest'" EXIT
 {
   echo -n '{"schemaVersion":2,"config":'
   print-descriptor "$image_config" "$image_config_digest" 'application/vnd.oci.image.config.v1+json'

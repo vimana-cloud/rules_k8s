@@ -31,5 +31,6 @@ function make-alias {
 
 make-alias kubectl "$kubectl"
 
-# Can't use `exec` or the `trap` would not run.
-PATH="${tmp_path}:${PATH}" "$minikube" "$@"
+# Append to `PATH` safely: https://unix.stackexchange.com/a/415028.
+# Also, can't use `exec` or the `trap` would not run.
+PATH="${tmp_path}${PATH:+:${PATH}}" "$minikube" "$@"

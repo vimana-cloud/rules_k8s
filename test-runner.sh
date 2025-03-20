@@ -64,78 +64,82 @@ done
 
 # Create a new K8s test namespace with a unique, randomized name.
 namespace="test-$(uuidgen)"
-"$kubectl" create namespace "$namespace" && {
+"$kubectl" create namespace "$namespace" || {
+  echo >&2 "Failed to create namespace '$namespace'."
+  echo >&2 'Is Minikube running?'
+  exit 1
+}
 
-  # Delete the test namespace on exit.
-  function delete-test-namespace {
-    "$kubectl" delete namespace "$namespace"
-  }
-  trap delete-test-namespace EXIT
+# Delete the test namespace on exit.
+function delete-test-namespace {
+  "$kubectl" delete namespace "$namespace"
+}
+trap delete-test-namespace EXIT
 
-  # Create the initial objects for this test, if there are any.
-  [ "$objects" = '[]' ] && echo >&2 "No initial objects specified." || {
-    # Use `jq` to iterate over the JSON-encoded array of objects.
-    <<< "$objects" jq --raw-output '.[]' | while read -r object
-    do
-      "$kubectl" --namespace="$namespace" apply --filename="$object" || {
-        echo >&2 "Failed to create initial object '$object'."
-        exit 1
-      }
-    done
-  }
-
-  # Print logs from every pod to the test log
-  "$kubectl" --namespace="$namespace" get pods --output=name | while read -r pod
+# Create the initial objects for this test, if there are any.
+[ "$objects" = '[]' ] && echo >&2 "No initial objects specified." || {
+  # Use `jq` to iterate over the JSON-encoded array of objects.
+  <<< "$objects" jq --raw-output '.[]' | while read -r object
   do
-    # First wait for each pod to be ready.
-    # Would be weird if anything took longer than 10 seconds.
-    "$kubectl" --namespace="$namespace" wait --for=condition=Ready --timeout=10s "$pod"
-    # Continuously print logs in the background. It will stop when the namespace is deleted.
-    # Store them in the artifacts directory in a text file name after the pod (minus the 'pod/' prefix).
-    "$kubectl" --namespace="$namespace" logs --follow --all-containers "$pod" \
-      > "${artifacts}/${pod:4}.logs.txt" &
+    "$kubectl" --namespace="$namespace" apply --filename="$object" || {
+      echo >&2 "Failed to create initial object '$object'."
+      exit 1
+    }
+  done
+}
+
+# Print logs from every pod to the test log
+"$kubectl" --namespace="$namespace" get pods --output=name | while read -r pod
+do
+  # First wait for each pod to be ready.
+  # Would be weird if anything took longer than 10 seconds.
+  "$kubectl" --namespace="$namespace" wait --for=condition=Ready --timeout=10s "$pod"
+  # Continuously print logs in the background. It will stop when the namespace is deleted.
+  # Store them in the artifacts directory in a text file name after the pod (minus the 'pod/' prefix).
+  "$kubectl" --namespace="$namespace" logs --follow --all-containers "$pod" \
+    > "${artifacts}/${pod:4}.logs.txt" &
+done
+
+# Set up port forwarding, if configured.
+[ "$port_forward" = '{}' ] && echo >&2 "No port-forwarding configured." || {
+  # Use `jq` to denormalize the JSON-encoded object:
+  # each item of each value array is printed on its own line,
+  # immediately preceded by its key on the line above
+  # (so each key appears as many times as it has items in its value array).
+  <<< "$port_forward" jq --raw-output 'to_entries[] | .key as $key | .value[] | "\($key)\n\(.)"' \
+    | while read -r resource
+  do
+    # Keys and values are printed on separate lines,
+    # so we know that the total number of lines is a multiple of 2.
+    read -r mapping
+    # Port-forward in the background. It will stop when the namespace is deleted.
+    "$kubectl" --namespace="$namespace" port-forward "$resource" "$mapping" &
   done
 
-  # Set up port forwarding, if configured.
-  [ "$port_forward" = '{}' ] && echo >&2 "No port-forwarding configured." || {
-    # Use `jq` to denormalize the JSON-encoded object:
-    # each item of each value array is printed on its own line,
-    # immediately preceded by its key on the line above
-    # (so each key appears as many times as it has items in its value array).
-    <<< "$port_forward" jq --raw-output 'to_entries[] | .key as $key | .value[] | "\($key)\n\(.)"' \
-      | while read -r resource
-    do
-      # Keys and values are printed on separate lines,
-      # so we know that the total number of lines is a multiple of 2.
-      read -r mapping
-      # Port-forward in the background. It will stop when the namespace is deleted.
-      "$kubectl" --namespace="$namespace" port-forward "$resource" "$mapping" &
+  # Port-forwarding can take a bit of time to set up.
+  # Poll each local port until it becomes available.
+  <<< "$port_forward" jq --raw-output 'to_entries[] | .value[] | split(":")[0]' \
+    | while read -r port
+  do
+    until (echo > "/dev/tcp/localhost/$port") 2> /dev/null
+    do sleep 0.5s
     done
-
-    # Port-forwarding can take a bit of time to set up.
-    # Poll each local port until it becomes available.
-    <<< "$port_forward" jq --raw-output 'to_entries[] | .value[] | split(":")[0]' \
-      | while read -r port
-    do
-      until (echo > "/dev/tcp/localhost/$port") 2> /dev/null
-      do sleep 0.5s
-      done
-    done
-  }
-
-  # Set up the override file for /etc/hosts.
-  tmp_hosts="$(mktemp)"
-  echo >&2 "Using '$tmp_hosts' as temporary override for '/etc/hosts'."
-  # Use `jq` to print each value-key pair on its own line in the override file.
-  <<< "$hosts" jq --raw-output 'to_entries[] | "\(.value) \(.key)"' > "$tmp_hosts"
-
-  # Run the test in a new mount namespace, with the override file bind-mounted over /etc/hosts.
-  unshare --map-root-user --mount -- \
-    bash -c "mount --bind '$tmp_hosts' /etc/hosts && echo >&2 'Running test executable.' && exec '$test'"
-  test_result="$?"
-
-  # Might as well clean up the temporary file.
-  rm "$tmp_hosts"
-
-  exit "$test_result"
+  done
 }
+
+# Set up the override file for /etc/hosts.
+tmp_hosts="$(mktemp)"
+echo >&2 "Using '$tmp_hosts' as temporary override for '/etc/hosts'."
+# Use `jq` to print each value-key pair on its own line in the override file.
+<<< "$hosts" jq --raw-output 'to_entries[] | "\(.value) \(.key)"' > "$tmp_hosts"
+
+# Run the test in a new mount namespace, with the override file bind-mounted over /etc/hosts.
+unshare --map-root-user --mount -- \
+  bash -c "mount --bind '$tmp_hosts' /etc/hosts && echo >&2 'Running test executable.' && exec '$test'"
+test_result="$?"
+
+# Might as well clean up the temporary file.
+rm "$tmp_hosts"
+
+exit "$test_result"
+

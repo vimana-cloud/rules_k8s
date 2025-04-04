@@ -21,6 +21,10 @@ so this is not exactly a "universal" K8s ruleset.
 
 ## Binaries
 
+Provides a custom tool [`//:tls-generate`](tls-generate.sh)
+to generate either self-signed CA credentials or TLS certificates
+using OpenSSL.
+
 Automatically downloads and makes available
 the following pre-built binaries:
 

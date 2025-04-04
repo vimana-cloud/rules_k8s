@@ -86,3 +86,9 @@ sh_binary(
     srcs = ["vimana-push.sh"],
     visibility = ["//visibility:public"],
 )
+
+sh_binary(
+    name = "tls-generate",
+    srcs = ["tls-generate.sh"],
+    visibility = ["//visibility:public"],
+)

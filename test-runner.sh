@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Runner template for `k8s_cluster_test`.
 #
 # This script is run as a Bazel test.
@@ -29,28 +31,31 @@ then
 fi
 
 # Path to kubectl binary.
-kubectl='{{KUBECTL}}'
-# JSON-encoded array of paths to initial K8s object definitions (YAML files).
-objects='{{OBJECTS}}'
+kubectl={{KUBECTL}}
+# JSON-encoded array of paths to initial K8s resource files.
+objects={{OBJECTS}}
 # JSON-encoded object mapping resource names to arrays of colon-separated port pairs.
-port_forward='{{PORT-FORWARD}}'
+port_forward={{PORT-FORWARD}}
 # JSON-encoded object mapping host names to IP addresses.
-hosts='{{HOSTS}}'
+hosts={{HOSTS}}
 # Path to test executable.
-test='{{TEST}}'
+test={{TEST}}
 # JSON-encoded array of paths to setup executables.
-setup='{{SETUP}}'
+setup={{SETUP}}
 
 # Path to directory where artifacts should be stored.
 # https://bazel.build/reference/test-encyclopedia#initial-conditions
 artifacts="${TEST_UNDECLARED_OUTPUTS_DIR}"
+
+# Would be weird if anything took longer than 15 seconds.
+timeout='15'
 
 # Use `jq` to iterate over the JSON-encoded array of setup executables.
 <<< "$setup" jq --raw-output '.[]' | while read -r action
 do
   "$action" || {
     echo >&2 "Failed while running test setup action."
-    exit 1
+    exit 2
   }
 done
 
@@ -67,7 +72,7 @@ namespace="test-$(uuidgen)"
 "$kubectl" create namespace "$namespace" || {
   echo >&2 "Failed to create namespace '$namespace'."
   echo >&2 'Is Minikube running?'
-  exit 1
+  exit 3
 }
 
 # Delete the test namespace on exit.
@@ -83,7 +88,7 @@ trap delete-test-namespace EXIT
   do
     "$kubectl" --namespace="$namespace" apply --filename="$object" || {
       echo >&2 "Failed to create initial object '$object'."
-      exit 1
+      exit 4
     }
   done
 }
@@ -92,8 +97,7 @@ trap delete-test-namespace EXIT
 "$kubectl" --namespace="$namespace" get pods --output=name | while read -r pod
 do
   # First wait for each pod to be ready.
-  # Would be weird if anything took longer than 10 seconds.
-  "$kubectl" --namespace="$namespace" wait --for=condition=Ready --timeout=10s "$pod"
+  "$kubectl" --namespace="$namespace" wait --for=condition=Ready --timeout="${timeout}s" "$pod"
   # Continuously print logs in the background. It will stop when the namespace is deleted.
   # Store them in the artifacts directory in a text file name after the pod (minus the 'pod/' prefix).
   "$kubectl" --namespace="$namespace" logs --follow --all-containers "$pod" \
@@ -116,15 +120,21 @@ done
     "$kubectl" --namespace="$namespace" port-forward "$resource" "$mapping" &
   done
 
-  # Port-forwarding can take a bit of time to set up.
-  # Poll each local port until it becomes available.
+  # Port-forwarding can take time. Poll each local port until it becomes available.
+  start_time=$(date +%s)
   <<< "$port_forward" jq --raw-output 'to_entries[] | .value[] | split(":")[0]' \
     | while read -r port
   do
     until (echo > "/dev/tcp/localhost/$port") 2> /dev/null
-    do sleep 0.5s
+    do
+      sleep 0.5s
+      current_time=$(date +%s)
+      (( current_time - start_time > timeout )) && {
+        echo >&2 "Timed out forwarding port $port."
+        exit 5
+      }
     done
-  done
+  done || exit $?
 }
 
 # Set up the override file for /etc/hosts.

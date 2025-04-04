@@ -1,4 +1,6 @@
-# Rules and macros for running tests in the context of a running K8s cluster.
+""" Rules and macros for running tests in the context of a running K8s cluster. """
+
+load("@bazel_skylib//lib:shell.bzl", "shell")
 
 def _k8s_cluster_test_impl(ctx):
     # Gather all the setup executables and dependencies.
@@ -9,18 +11,27 @@ def _k8s_cluster_test_impl(ctx):
         setup.append(action.files_to_run.executable.short_path)
         setup_runfiles.append(action.default_runfiles)
 
+    # `kubectl apply` only accepts certain file suffixes.
+    objects = [
+        object.short_path
+        for object in ctx.files.objects
+        if object.short_path.endswith(".json")
+        or object.short_path.endswith(".yaml")
+        or object.short_path.endswith(".yml")
+    ]
+
     # Parameterize the runner by expanding the template.
     runner = ctx.actions.declare_file(ctx.label.name)
     ctx.actions.expand_template(
         template = ctx.file._runner_template,
         output = runner,
         substitutions = {
-            "{{KUBECTL}}": ctx.file._kubectl_bin.short_path,
-            "{{OBJECTS}}": json.encode([object.short_path for object in ctx.files.objects]),
-            "{{PORT-FORWARD}}": json.encode(ctx.attr.port_forward),
-            "{{HOSTS}}": json.encode(ctx.attr.hosts),
-            "{{TEST}}": ctx.executable.test.short_path,
-            "{{SETUP}}": json.encode(setup),
+            "{{KUBECTL}}": shell.quote(ctx.file._kubectl_bin.short_path),
+            "{{OBJECTS}}": shell.quote(json.encode(objects)),
+            "{{PORT-FORWARD}}": shell.quote(json.encode(ctx.attr.port_forward)),
+            "{{HOSTS}}": shell.quote(json.encode(ctx.attr.hosts)),
+            "{{TEST}}": shell.quote(ctx.executable.test.short_path),
+            "{{SETUP}}": shell.quote(json.encode(setup)),
         },
         is_executable = True,
     )

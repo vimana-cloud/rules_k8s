@@ -32,6 +32,7 @@ def _k8s_cluster_test_impl(ctx):
             "{{HOSTS}}": shell.quote(json.encode(ctx.attr.hosts)),
             "{{TEST}}": shell.quote(ctx.executable.test.short_path),
             "{{SETUP}}": shell.quote(json.encode(setup)),
+            "{{CLEANUP}}": str(int(ctx.attr.cleanup)),
         },
         is_executable = True,
     )
@@ -75,6 +76,11 @@ k8s_cluster_test = rule(
         ),
         "setup": attr.label_list(
             doc = "Executable targets to run before each test run.",
+        ),
+        "cleanup": attr.bool(
+            doc = "Whether to delete the K8s namespace (and all the resources within it)" +
+                  "at the end of the test.",
+            default = True,
         ),
         "_runner_template": attr.label(
             default = "//:test-runner.sh",

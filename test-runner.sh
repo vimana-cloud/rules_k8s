@@ -42,6 +42,8 @@ hosts={{HOSTS}}
 test={{TEST}}
 # JSON-encoded array of paths to setup executables.
 setup={{SETUP}}
+# Whether to delete the K8s namespace on exit (1 = yes / 0 = no).
+cleanup={{CLEANUP}}
 
 # Path to directory where artifacts should be stored.
 # https://bazel.build/reference/test-encyclopedia#initial-conditions
@@ -75,11 +77,13 @@ namespace="test-$(uuidgen)"
   exit 3
 }
 
-# Delete the test namespace on exit.
+# Delete the test namespace on exit if cleanup is enabled.
 function delete-test-namespace {
   "$kubectl" delete namespace "$namespace"
 }
-trap delete-test-namespace EXIT
+if (( cleanup ))
+then trap delete-test-namespace EXIT
+fi
 
 # Create the initial objects for this test, if there are any.
 [ "$objects" = '[]' ] && echo >&2 "No initial objects specified." || {

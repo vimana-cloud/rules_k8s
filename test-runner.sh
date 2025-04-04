@@ -125,16 +125,16 @@ done
   <<< "$port_forward" jq --raw-output 'to_entries[] | .value[] | split(":")[0]' \
     | while read -r port
   do
-    until (echo > "/dev/tcp/localhost/$port") 2> /dev/null
+    until ( echo > "/dev/tcp/localhost/$port" ) 2> /dev/null
     do
       sleep 0.5s
       current_time=$(date +%s)
       (( current_time - start_time > timeout )) && {
         echo >&2 "Timed out forwarding port $port."
         exit 5
-      }
+      } || true  # The timeout check must have a successful status.
     done
-  done || exit $?
+  done || exit $?  # Propagate any timeout error from the subshell.
 }
 
 # Set up the override file for /etc/hosts.

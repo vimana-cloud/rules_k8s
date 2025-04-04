@@ -1,21 +1,9 @@
-# Kubernetes Bazel Tools (Vimana-specific)
+# Kubernetes Bazel Tools
 
 A Bazel module with tools for working with Kubernetes (K8s).
-This has some general rules, but some are tailor made for [Vimana]
-so this is not exactly a "universal" K8s ruleset.
-
-[Vimana]: https://github.com/vimana-cloud/vimana
 
 ## Rules
 
-- [`//:registry.bzl`](registry.bzl):
-  * `vimana_push` - Similar to
-    [`oci_push`](https://github.com/bazel-contrib/rules_oci/blob/main/docs/push.md)
-    but for Vimana's Wasm sandboxes.
-- [`//:resource.bzl`](resource.bzl):
-  * `k8s_secret_tls` - Convert PEM-encoded private key and certificate files
-    into a K8s secret resource.
-  * `k8s_vimana_domain` - Statically built domain as a K8s resource.
 - [`//:test.bzl`](test.bzl):
   * `k8s_cluster_test` - Run a test in the context of a running K8s cluster.
 
@@ -31,10 +19,13 @@ the following pre-built binaries:
 - `//:kubectl`
 - `//:kustomize`
 - `//:crictl`
-- `//:minikube-bin` (x86-64 only) - The [Vimana fork](https://github.com/vimana-cloud/minikube)
+- `//:minikube-bin` (x86-64 only) - The [Vimana fork] of [Minikube]
   with support for the `workd` container runtime.
 - `//:minikube` - Wrapper script around the raw `:minikube-bin` binary
   that makes it invoke `:kubectl` when it searches the `PATH` for "kubectl".
+
+[Vimana fork]: https://github.com/vimana-cloud/minikube
+[Minikube]: https://minikube.sigs.k8s.io/
 
 ## Caveats
 

@@ -2,11 +2,7 @@ load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:native_binary.bzl", "native_binary")
 load(":private.bzl", "execution_platforms", "format_platform", "format_platform_x86")
 
-exports_files([
-    "test-runner.sh",
-    "vimana-push.sh",
-    "sha256-substitute.sh",
-])
+exports_files(["test-runner.sh"])
 
 # Execution-platform-specific aliases for pre-built binaries:
 # Some custom rules need Bash, so Windows is out for now.
@@ -78,12 +74,6 @@ sh_binary(
         ":kubectl",
         ":minikube-bin",
     ],
-    visibility = ["//visibility:public"],
-)
-
-sh_binary(
-    name = "vimana-push",
-    srcs = ["vimana-push.sh"],
     visibility = ["//visibility:public"],
 )
 

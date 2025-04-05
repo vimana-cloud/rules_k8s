@@ -77,10 +77,19 @@ namespace="test-$(uuidgen)"
   exit 3
 }
 
-# Delete the test namespace on exit if cleanup is enabled.
+# Clean up after the test.
+# Can either be called automatically via `trap` if something fails,
+# or explicitly at the end if everything (including the test itself) succeeds.
+# In the former case, this function is best-effort (we already have an error status).
+# In the latter, the cleanup function can cause the test to fail.
 function delete-test-namespace {
-  "$kubectl" delete namespace "$namespace"
+  "$kubectl" delete namespace "$namespace" --timeout="${timeout}s" || {
+    echo >&2 "Timed out deleting namespace. The pods are probably struggling to shut down."
+    false  # Indicate cleanup failed.
+  }
 }
+
+# if cleanup is enabled, delete the test namespace automatically on early exit.
 if (( cleanup ))
 then trap delete-test-namespace EXIT
 fi
@@ -106,7 +115,8 @@ fi
         wait --for=condition=Ready --timeout="${timeout}s" "$pod" \
           || exit 5
       # Continuously print logs in the background. It will stop when the namespace is deleted.
-      # Store them in the artifacts directory in a text file name after the pod (minus the 'pod/' prefix).
+      # Store them in the artifacts directory in a text file named after the pod
+      # (minus the 'pod/' prefix).
       "$kubectl" --namespace="$namespace" logs --follow --all-containers "$pod" \
         > "${artifacts}/${pod:4}.logs.txt" &
     done || exit $?  # Propagate any timeout error from the subshell.
@@ -158,5 +168,19 @@ test_result=$?
 # Might as well clean up the temporary file.
 rm "$tmp_hosts"
 
-exit "$test_result"
+# If the test failed, return its exit status.
+# The cleanup function may run but its success / error status is ignored.
+if (( test_result ))
+then exit $test_result
+fi
 
+# If the test succeeded, and cleanup is enabled,
+# run the cleanup function explicitly and fail if cleanup fails.
+if (( cleanup ))
+then
+  # Disable automatic cleanup, because we're calling it explicitly instead.
+  trap - EXIT
+  delete-test-namespace || exit 7
+fi
+
+exit 0

@@ -156,12 +156,12 @@ fi
 
 # Set up the override file for /etc/hosts.
 tmp_hosts="$(mktemp)"
-echo >&2 "Using '$tmp_hosts' as temporary override for '/etc/hosts'."
+echo >&2 "Using '$tmp_hosts' to override '/etc/hosts'."
 # Use `jq` to print each value-key pair on its own line in the override file.
 <<< "$hosts" jq --raw-output 'to_entries[] | "\(.value) \(.key)"' > "$tmp_hosts"
 
 # Run the test in a new mount namespace, with the override file bind-mounted over /etc/hosts.
-cmd="mount --bind '$tmp_hosts' /etc/hosts && echo >&2 'Running test executable.' && exec '$test'"
+cmd="mount --bind '$tmp_hosts' /etc/hosts && echo >&2 'Running test...' && exec '$test'"
 unshare --map-root-user --mount -- bash -c "$cmd"
 test_result=$?
 

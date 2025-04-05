@@ -23,23 +23,23 @@ aarch64_platforms = [
 execution_platforms = x86_64_platforms + aarch64_platforms
 
 # https://github.com/kubernetes/kubernetes/releases
-kubernetes_version = "1.31.2"
+kubernetes_version = "1.32.3"
 
 kubectl_integrity = {
-    "aarch64-linux": "sha384-EI3XWAb35lxGxdpopPjCsuy3IjUcgnGgQPld4XG+BQnjlV9/OTR8B3JmVSwJoMiM",
-    "aarch64-macos": "sha384-g3X1owXXsQJYfrHDU7h5DxGin83nWwr1cNuWo3wTvtgZgh/H4GEoV7aWEPn/fWms",
-    "x86_64-linux": "sha384-d1TmGRQ3gIee3Ya0YjtelVtr/iSRXLdgsbn97qlm1U9oexLj8uHm6xn1QmVkiDmz",
-    "x86_64-macos": "sha384-7DXAvTpWgUW+vg0m02pcTZ8GIdVxOw3L8dT73xPi7g6ZYZ8yD6CkkG+f5iXhK/sT",
+    "aarch64-linux": "sha384-992AvvKSad0hwynMImFhI9TCD0QB+4QxrCt0Nb13uK0ljkPJYBLAuhY5QIi8Gipu",
+    "aarch64-macos": "sha384-4mNi/qqncSSS4iiAysw3Kwq0WkhffD1xkZW3eRi/7OjZ/9lWem1QGyBst+FOKuf/",
+    "x86_64-linux": "sha384-PySELntns9AkQ3ZA4Tk74wH5uLuxBy630nbaGVSxaQD5peYL2QMGLHEpSiJqbkl9",
+    "x86_64-macos": "sha384-f0L13XaXXmrDv/pzmVlSvratDymq1QJDjA+6VanaTo8MPUL7laxe3gfHeUudUUKK",
 }
 
 # https://github.com/istio/istio/releases
-istio_version = "1.23.5"
+istio_version = "1.25.1"
 
 istio_integrity = {
-    "aarch64-linux": "sha384-YEOJzfY8nllLjlPHQzKu1c8Dz8csLJrh79ItPLCgBq26ZfbkmzMjUZT5YMsEKAiY",
-    "aarch64-macos": "sha384-7T2K4EGdGL1DoUevBreMcPSg2zAdf2D2fHAVcyGFnBDd1k9qTSOJKXpgCGbklQuz",
-    "x86_64-linux": "sha384-/1jw6GBYFfm5klFl+UjQNFRiQEKf8vEF4Y4OvVkR22YW7KjF/9UmDpi5Lvc4kM59",
-    "x86_64-macos": "sha384-gKqehKzsn+Sm8z9q86r7fYhxf+1FMZCgkDyn2RoxEhc6TsbqLmyRYY5CheO58R6x",
+    "aarch64-linux": "sha384-2DvRrxG1+F/eB7NKeS/XBQumAUBysQ+zeP/WrEuYabDxM2tfQpRRRzy2/PCEcV0f",
+    "aarch64-macos": "sha384-Iwq7tmlRKrFySCkdIQExirUyQkIAXsSEtBPh7sYGGd2Z992imJK4rwej+VN4bKxg",
+    "x86_64-linux": "sha384-DeAYTbdwsyt3SJy6lHph8FOnMMEdZNC09bmyn94YNPA6RqVLX8lF6ZgNQ7/8T+r8",
+    "x86_64-macos": "sha384-8NdT/qPRvk0pbxPbvA1Of8v9cmDcFFc6qerM9QN1gT1MdlowgDQr7cptsniJt55X",
 }
 
 # https://github.com/containernetworking/plugins/releases
@@ -50,13 +50,13 @@ cni_plugins_version = "1.6.2"
 cni_plugins_integrity = "sha384-DE4Non3KHJ0T3aLjn0jkdoI33SXnY/4ee6MidCiZDMI/IRtSfQSz7ohqZyuAW/Oi"
 
 # https://github.com/kubernetes-sigs/kustomize/releases
-kustomize_version = "5.5.0"
+kustomize_version = "5.6.0"
 
 kustomize_integrity = {
-    "aarch64-linux": "sha384-LCSt1E04vEP5og6Y4AcTyJdpNHips3VPAf3Ud55TkU0Tg8d0eYnlQJTNINl7iVBb",
-    "aarch64-macos": "sha384-p7xFnsqGklQs7uRlgwMRjwS7iODKghZDrvNWoLerOQbOa2fgd2froIL944iva6p8",
-    "x86_64-linux": "sha384-iD1YvxIfYR9N+Hi+igw8GXeeoWuMNqAUOqckRkDJJEWp1r7dBEnAynR+JPn4DZbT",
-    "x86_64-macos": "sha384-2DQtUwEUOGKeTJbWKQahWjk9C9MBCndjsP0EASrNozBBK9I7JFlwUHpyY7I5zcmy",
+    "aarch64-linux": "sha384-LRu1nlTiGZuPqC5Uq7p8C4CgfbieLudwuNBZf0zVtNe8XrQKovr495iRAXvJsW9J",
+    "aarch64-macos": "sha384-Yj+2r/vVoIAZNN4X8j2VeE3fGBlZyjTKyPGx8ZESBPqilJcwSaOZ15WUXak55SzK",
+    "x86_64-linux": "sha384-tgGdPFRh9am40ZbfDc8FzNJAEy4JHjaRaSOVQfCkuA69LSjj1QozrtSdJR51hahi",
+    "x86_64-macos": "sha384-SZPronUSoZCCpLTyr6qJm87nQ/5aV+2pUw7YGWHmqi6rT5SEJS55FXgCr8Dk6B5W",
 }
 
 # https://github.com/kubernetes-sigs/cri-tools/releases
@@ -70,6 +70,7 @@ crictl_integrity = {
 }
 
 # https://github.com/vimana-cloud/minikube/releases
+# https://github.com/kubernetes/minikube/releases
 minikube_version = "1.35.0-workd.3"
 
 minikube_integrity = {

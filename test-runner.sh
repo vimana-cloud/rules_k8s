@@ -98,15 +98,18 @@ fi
 }
 
 # Print logs from every pod to the test log
-"$kubectl" --namespace="$namespace" get pods --output=name | while read -r pod
-do
-  # First wait for each pod to be ready.
-  "$kubectl" --namespace="$namespace" wait --for=condition=Ready --timeout="${timeout}s" "$pod"
-  # Continuously print logs in the background. It will stop when the namespace is deleted.
-  # Store them in the artifacts directory in a text file name after the pod (minus the 'pod/' prefix).
-  "$kubectl" --namespace="$namespace" logs --follow --all-containers "$pod" \
-    > "${artifacts}/${pod:4}.logs.txt" &
-done
+"$kubectl" --namespace="$namespace" get pods --output=name \
+  | while read -r pod
+    do
+      # First wait for each pod to be ready.
+      "$kubectl" --namespace="$namespace" \
+        wait --for=condition=Ready --timeout="${timeout}s" "$pod" \
+          || exit 5
+      # Continuously print logs in the background. It will stop when the namespace is deleted.
+      # Store them in the artifacts directory in a text file name after the pod (minus the 'pod/' prefix).
+      "$kubectl" --namespace="$namespace" logs --follow --all-containers "$pod" \
+        > "${artifacts}/${pod:4}.logs.txt" &
+    done || exit $?  # Propagate any timeout error from the subshell.
 
 # Set up port forwarding, if configured.
 [ "$port_forward" = '{}' ] && echo >&2 "No port-forwarding configured." || {
@@ -135,7 +138,7 @@ done
       current_time=$(date +%s)
       (( current_time - start_time > timeout )) && {
         echo >&2 "Timed out forwarding port $port."
-        exit 5
+        exit 6
       } || true  # The timeout check must have a successful status.
     done
   done || exit $?  # Propagate any timeout error from the subshell.
@@ -148,9 +151,9 @@ echo >&2 "Using '$tmp_hosts' as temporary override for '/etc/hosts'."
 <<< "$hosts" jq --raw-output 'to_entries[] | "\(.value) \(.key)"' > "$tmp_hosts"
 
 # Run the test in a new mount namespace, with the override file bind-mounted over /etc/hosts.
-unshare --map-root-user --mount -- \
-  bash -c "mount --bind '$tmp_hosts' /etc/hosts && echo >&2 'Running test executable.' && exec '$test'"
-test_result="$?"
+cmd="mount --bind '$tmp_hosts' /etc/hosts && echo >&2 'Running test executable.' && exec '$test'"
+unshare --map-root-user --mount -- bash -c "$cmd"
+test_result=$?
 
 # Might as well clean up the temporary file.
 rm "$tmp_hosts"

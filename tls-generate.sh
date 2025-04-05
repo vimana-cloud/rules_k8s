@@ -114,7 +114,7 @@ else
   fi
 
   openssl req -new -key "$key" -subj "/CN=$name" \
-    -addext 'keyUsage=critical,keyEncipherment' \
+    -addext 'keyUsage=critical,digitalSignature' \
     -addext "subjectAltName = DNS:$name" \
     | openssl x509 -req -CA "$root_cert" -CAkey "$root_key" \
       -copy_extensions copy \

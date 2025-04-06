@@ -15,9 +15,9 @@ def _k8s_cluster_test_impl(ctx):
     objects = [
         object.short_path
         for object in ctx.files.objects
-        if object.short_path.endswith(".json")
-        or object.short_path.endswith(".yaml")
-        or object.short_path.endswith(".yml")
+        if object.short_path.endswith(".json") or
+           object.short_path.endswith(".yaml") or
+           object.short_path.endswith(".yml")
     ]
 
     # Parameterize the runner by expanding the template.

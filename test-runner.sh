@@ -73,7 +73,7 @@ done
 namespace="test-$(uuidgen)"
 "$kubectl" create namespace "$namespace" || {
   echo >&2 "Failed to create namespace '$namespace'."
-  echo >&2 'Is Minikube running?'
+  echo >&2 'Is the cluster running?'
   exit 3
 }
 

@@ -49,9 +49,6 @@ cleanup={{CLEANUP}}
 # https://bazel.build/reference/test-encyclopedia#initial-conditions
 artifacts="${TEST_UNDECLARED_OUTPUTS_DIR}"
 
-# Would be weird if anything took longer than 15 seconds.
-timeout='15'
-
 # Use `jq` to iterate over the JSON-encoded array of setup executables.
 <<< "$setup" jq --raw-output '.[]' | while read -r action
 do
@@ -83,7 +80,7 @@ namespace="test-$(uuidgen)"
 # In the former case, this function is best-effort (we already have an error status).
 # In the latter, the cleanup function can cause the test to fail.
 function delete-test-namespace {
-  "$kubectl" delete namespace "$namespace" --timeout="${timeout}s" || {
+  "$kubectl" delete namespace "$namespace" --timeout=30s || {
     echo >&2 "Timed out deleting namespace. The pods are probably struggling to shut down."
     false  # Indicate cleanup failed.
   }
@@ -112,7 +109,7 @@ fi
     do
       # First wait for each pod to be ready.
       "$kubectl" --namespace="$namespace" \
-        wait --for=condition=Ready --timeout="${timeout}s" "$pod" \
+        wait --for=condition=Ready --timeout=15s "$pod" \
           || exit 5
       # Continuously print logs in the background. It will stop when the namespace is deleted.
       # Store them in the artifacts directory in a text file named after the pod
@@ -145,8 +142,9 @@ fi
     until ( echo > "/dev/tcp/localhost/$port" ) 2> /dev/null
     do
       sleep 0.5s
+      # Time out after 10 seconds.
       current_time=$(date +%s)
-      (( current_time - start_time > timeout )) && {
+      (( current_time - start_time > 10 )) && {
         echo >&2 "Timed out forwarding port $port."
         exit 6
       } || true  # The timeout check must have a successful status.

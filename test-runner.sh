@@ -80,10 +80,15 @@ namespace="test-$(uuidgen)"
 # In the former case, this function is best-effort (we already have an error status).
 # In the latter, the cleanup function can cause the test to fail.
 function delete-test-namespace {
-  "$kubectl" delete namespace "$namespace" --timeout=30s || {
-    echo >&2 "Timed out deleting namespace. The pods are probably struggling to shut down."
+  local start_time=$(date +%s)
+  if "$kubectl" delete namespace "$namespace" --timeout=40s
+  then
+    local end_time=$(date +%s)
+    echo >&2 "Successfully cleaned up the test namespace in $(( end_time - start_time )) seconds."
+  else
+    echo >&2 "The pods are probably struggling to shut down."
     false  # Indicate cleanup failed.
-  }
+  fi
 }
 
 # if cleanup is enabled, delete the test namespace automatically on early exit.
@@ -102,6 +107,7 @@ fi
     }
   done
 }
+creation_time=$(date +%s)
 
 # Print logs from every pod to the test log
 "$kubectl" --namespace="$namespace" get pods --output=name \
@@ -116,7 +122,9 @@ fi
       # (minus the 'pod/' prefix).
       "$kubectl" --namespace="$namespace" logs --follow --all-containers "$pod" \
         > "${artifacts}/${pod:4}.logs.txt" &
-    done || exit $?  # Propagate any timeout error from the subshell.
+    done || exit $?  # Propagate any timeout error from the piped subshell.
+ready_time=$(date +%s)
+echo >&2 "All pods are ready $(( ready_time - creation_time )) seconds after creation."
 
 # Set up port forwarding, if configured.
 [ "$port_forward" = '{}' ] && echo >&2 "No port-forwarding configured." || {
@@ -138,18 +146,18 @@ fi
   start_time=$(date +%s)
   <<< "$port_forward" jq --raw-output 'to_entries[] | .value[] | split(":")[0]' \
     | while read -r port
-  do
-    until ( echo > "/dev/tcp/localhost/$port" ) 2> /dev/null
-    do
-      sleep 0.5s
-      # Time out after 10 seconds.
-      current_time=$(date +%s)
-      (( current_time - start_time > 10 )) && {
-        echo >&2 "Timed out forwarding port $port."
-        exit 6
-      } || true  # The timeout check must have a successful status.
-    done
-  done || exit $?  # Propagate any timeout error from the subshell.
+      do
+        until ( echo > "/dev/tcp/localhost/$port" ) 2> /dev/null
+        do
+          sleep 0.5s
+          # Time out after 10 seconds.
+          current_time=$(date +%s)
+          (( current_time - start_time > 10 )) && {
+            echo >&2 "Timed out forwarding port $port."
+            exit 6
+          } || true  # The timeout check must have a successful status.
+        done
+      done || exit $?  # Propagate any timeout error from the piped subshell.
 }
 
 # Set up the override file for /etc/hosts.

@@ -65,7 +65,7 @@ native_binary(
 
 sh_binary(
     name = "minikube",
-    srcs = ["minikube.sh"],
+    srcs = ["minikube-runner.sh"],
     args = [
         "$(location :minikube-bin)",
         "$(location :kubectl)",

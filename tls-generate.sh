@@ -33,6 +33,9 @@ function print-help {
   echo 'The first form generates a self-signed root certificate authority.'
   echo 'The second form generates TLS credentials for the site called `NAME`,'
   echo 'using the root CA specified by `--root-key` and `--root-cert`.'
+  echo ''
+  echo 'Try to use the system OpenSSL executable by default.'
+  echo 'Use optional `--openssl=PATH` to specify a path to the OpenSSL executable.'
 }
 
 key=''
@@ -41,6 +44,7 @@ ca=0
 name=''
 root_key=''
 root_cert=''
+openssl="$(command -v openssl || echo openssl)"
 
 while [[ $# -gt 0 ]]
 do
@@ -63,6 +67,9 @@ do
       ;;
     --root-cert=*)
       root_cert="${1#*=}"
+      ;;
+    --openssl=*)
+      openssl="${1#*=}"
       ;;
     --)
       break
@@ -89,7 +96,7 @@ then
 fi
 
 # Always generate a private key.
-openssl genrsa > "$key" || exit 2
+"$openssl" genrsa > "$key" || exit 2
 
 if (( ca ))
 then
@@ -100,10 +107,10 @@ then
   fi
 
   # TODO: Can `/CN` be anything? Is `-subj` even necessary?
-  openssl req -new -key "$key" -subj "/CN=ROOT" \
+  "$openssl" req -new -key "$key" -subj "/CN=ROOT" \
     -addext 'keyUsage=critical,keyCertSign' \
     -addext 'basicConstraints=critical,CA:TRUE' \
-    | openssl x509 -req -key "$key" \
+    | "$openssl" x509 -req -key "$key" \
       -copy_extensions copy \
       > "$cert"
 else
@@ -113,10 +120,10 @@ else
     exit 1
   fi
 
-  openssl req -new -key "$key" -subj "/CN=$name" \
+  "$openssl" req -new -key "$key" -subj "/CN=$name" \
     -addext 'keyUsage=critical,digitalSignature' \
     -addext "subjectAltName = DNS:$name" \
-    | openssl x509 -req -CA "$root_cert" -CAkey "$root_key" \
+    | "$openssl" x509 -req -CA "$root_cert" -CAkey "$root_key" \
       -copy_extensions copy \
       > "$cert"
 fi

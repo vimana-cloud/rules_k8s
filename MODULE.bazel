@@ -79,6 +79,16 @@ minikube_integrity = {
     "x86_64-macos": "sha384-08uM+CNK3fJRkZcivvKfEOLEGoqx7KEq0ljI1pp6+Yt4CZO4sHnS6W1Ya0PkagZL",
 }
 
+# https://github.com/kubernetes/kops/releases
+kops_version = "1.32.0"
+
+kops_integrity = {
+    "aarch64-linux": "sha384-WaEd53Nf6EVVJE1Ek7CqO5YEQLDUNjHwsfEIwW3LezhFIuyCAQgFbATne4QZEVwa",
+    "aarch64-macos": "sha384-XmOHbJcofC2WsYfsqwRU3ZdEriZQeB4gp4F74UudERDbnQJN4Mjlr4JgL2Wq3S7H",
+    "x86_64-linux": "sha384-Zt9RqbvWROSEpt5/3UYlufepKNRsksdUI9jt35ZV+a4Y804JXttrxTlGSNevvbnG",
+    "x86_64-macos": "sha384-wvhwTqlgqpiJ2CPT+nrkZfwjqtHpMlQLpMTViDK+2NSNPjaCbR1IhORTQBVz8sii",
+}
+
 # Manually download prebuilt binaries:
 
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
@@ -192,3 +202,18 @@ exports_files(
         version = minikube_version,
     ),
 ) for exe_platform in x86_64_platforms]
+
+[http_file(
+    name = "kops-" + exe_platform,
+    executable = True,
+    integrity = kops_integrity[exe_platform],
+    url = "https://github.com/kubernetes/kops/releases/download/v{version}/kops-{platform}".format(
+        platform = {
+            "aarch64-linux": "linux-arm64",
+            "aarch64-macos": "darwin-arm64",
+            "x86_64-linux": "linux-amd64",
+            "x86_64-macos": "darwin-amd64",
+        }[exe_platform],
+        version = kops_version,
+    ),
+) for exe_platform in execution_platforms]

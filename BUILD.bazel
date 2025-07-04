@@ -78,6 +78,12 @@ sh_binary(
     visibility = ["//visibility:public"],
 )
 
+native_binary(
+    name = "kops",
+    src = format_platform("@kops-{}//file"),
+    visibility = ["//visibility:public"],
+)
+
 sh_binary(
     name = "tls-generate",
     srcs = ["tls-generate.sh"],

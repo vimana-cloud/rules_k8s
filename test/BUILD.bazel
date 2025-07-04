@@ -8,6 +8,7 @@ binaries = [
     "@istio-{}//:istioctl",
     "@kustomize-{}//:kustomize",
     "@crictl-{}//:crictl",
+    "@kops-{}//file",
 ]
 
 # These binaries are only available on certain platforms,

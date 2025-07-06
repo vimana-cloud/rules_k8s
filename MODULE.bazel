@@ -26,70 +26,24 @@ execution_platforms = x86_64_platforms + aarch64_platforms
 # https://github.com/kubernetes/kubernetes/releases
 kubernetes_version = "1.32.6"
 
-kubectl_integrity = {
-    "aarch64-linux": "sha384-FkeIl0AJPkzqID5G7uUrg/lIFHIPXr++wOTEwyk74eWb/1jbFHU70iwtV4BfO/kd",
-    "aarch64-macos": "sha384-3nUypOW6EVUeqa0CyRjiDdhBP5sjM3XalxTRZLbsO5nSgc75e1oh+YZO8pCi4+jq",
-    "x86_64-linux": "sha384-9M5TMPBnh1QLCZAYc9QDlPJzfaOH0JuOi2ptWUIht3rrLk36yK4aT3mpemIHdx2W",
-    "x86_64-macos": "sha384-+NICgcOnn5pg/FkReAhaN/TIXq3Qd4zdKWLfuuq/h9txjF5TeVb4deIuqR6al9YV",
-}
-
 # https://github.com/istio/istio/releases
 istio_version = "1.26.2"
-
-istio_integrity = {
-    "aarch64-linux": "sha384-7QwlWKMcEpLkmV4/KsQqQtJMkZSqVTGiHbfmZAP3SIkHYwlelTEb1ZXXnvHozj+E",
-    "aarch64-macos": "sha384-MXVzEJiqKTD7HxdBjQ8ajB+tEFODx/oleV/x8NkJYrdkcZCIAU9vjZ7y2aaUHeGT",
-    "x86_64-linux": "sha384-MSVeSztitj36W8gzW5vL/94AW55oleUCy7M8GMljXshhrZ1YlcaiM1IFK8Czr2lK",
-    "x86_64-macos": "sha384-Mi8xQiY6fOtaPMmrVkVWr+4kDjSHI6PDXtkhlT8aO43wE8ulJHbKClwzi07GT6l4",
-}
 
 # https://github.com/containernetworking/plugins/releases
 cni_plugins_version = "1.7.1"
 
-# CNI plugins end up in the node Docker image,
-# so we only need Linux / x86-64.
-cni_plugins_integrity = "sha384-uB+qwUOWhcOryPE73I5m1UU0axXSmdbRIvQ8s7OFcky19JvgN2TOXdWvXU5mOOfq"
-
 # https://github.com/kubernetes-sigs/kustomize/releases
 kustomize_version = "5.6.0"
-
-kustomize_integrity = {
-    "aarch64-linux": "sha384-LRu1nlTiGZuPqC5Uq7p8C4CgfbieLudwuNBZf0zVtNe8XrQKovr495iRAXvJsW9J",
-    "aarch64-macos": "sha384-Yj+2r/vVoIAZNN4X8j2VeE3fGBlZyjTKyPGx8ZESBPqilJcwSaOZ15WUXak55SzK",
-    "x86_64-linux": "sha384-tgGdPFRh9am40ZbfDc8FzNJAEy4JHjaRaSOVQfCkuA69LSjj1QozrtSdJR51hahi",
-    "x86_64-macos": "sha384-SZPronUSoZCCpLTyr6qJm87nQ/5aV+2pUw7YGWHmqi6rT5SEJS55FXgCr8Dk6B5W",
-}
 
 # https://github.com/kubernetes-sigs/cri-tools/releases
 cri_tools_version = "1.33.0"
 
-crictl_integrity = {
-    "aarch64-linux": "sha384-e71ozsO5sADfH7r9Ikg9qibASQ/kZa3H2RpKXERuIEQoA6yUuDbINQ8y1QJ95xPG",
-    "aarch64-macos": "sha384-qurll9ISVrkffm1jxVQOnSAB8enrkMh0IX5/wVAt6MFo4PJ8nrz7LkvcC5CoqJkj",
-    "x86_64-linux": "sha384-Y/km7o8UwIKfqtEomXKj/SUmqtBGSohObYNThz1LfytVUdcL1eJwz3zweHMR9syP",
-    "x86_64-macos": "sha384-HI6s55ngdV13sqj4zJHgAnBVHzfEhvqQX7wdR/pN9ns1kU7Xhp4GTNMlziwhnKh6",
-}
+# https://github.com/kubernetes/kops/releases
+kops_version = "1.32.0"
 
 # https://github.com/kubernetes/minikube/releases
 # https://github.com/vimana-cloud/minikube/releases
 minikube_version = "1.36.0-workd"
-
-minikube_integrity = {
-    "x86_64-linux": "sha384-qtn6rs3jAV7TH+xSMHgQMVmzqQSGPaP9Zay+YaThfc2gbgAzFGx+2Ytp5aeQ9hur",
-    "x86_64-macos": "sha384-08uM+CNK3fJRkZcivvKfEOLEGoqx7KEq0ljI1pp6+Yt4CZO4sHnS6W1Ya0PkagZL",
-}
-
-# https://github.com/kubernetes/kops/releases
-kops_version = "1.32.0"
-
-kops_integrity = {
-    "aarch64-linux": "sha384-WaEd53Nf6EVVJE1Ek7CqO5YEQLDUNjHwsfEIwW3LezhFIuyCAQgFbATne4QZEVwa",
-    "aarch64-macos": "sha384-XmOHbJcofC2WsYfsqwRU3ZdEriZQeB4gp4F74UudERDbnQJN4Mjlr4JgL2Wq3S7H",
-    "x86_64-linux": "sha384-Zt9RqbvWROSEpt5/3UYlufepKNRsksdUI9jt35ZV+a4Y804JXttrxTlGSNevvbnG",
-    "x86_64-macos": "sha384-wvhwTqlgqpiJ2CPT+nrkZfwjqtHpMlQLpMTViDK+2NSNPjaCbR1IhORTQBVz8sii",
-}
-
-# Manually download prebuilt binaries:
 
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
@@ -98,7 +52,12 @@ http_file = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_
 [http_file(
     name = "kubectl-" + exe_platform,
     executable = True,
-    integrity = kubectl_integrity[exe_platform],
+    integrity = {
+        "aarch64-linux": "sha384-FkeIl0AJPkzqID5G7uUrg/lIFHIPXr++wOTEwyk74eWb/1jbFHU70iwtV4BfO/kd",
+        "aarch64-macos": "sha384-3nUypOW6EVUeqa0CyRjiDdhBP5sjM3XalxTRZLbsO5nSgc75e1oh+YZO8pCi4+jq",
+        "x86_64-linux": "sha384-9M5TMPBnh1QLCZAYc9QDlPJzfaOH0JuOi2ptWUIht3rrLk36yK4aT3mpemIHdx2W",
+        "x86_64-macos": "sha384-+NICgcOnn5pg/FkReAhaN/TIXq3Qd4zdKWLfuuq/h9txjF5TeVb4deIuqR6al9YV",
+    }[exe_platform],
     url = "https://dl.k8s.io/release/v{version}/bin/{platform}/kubectl".format(
         platform = {
             "aarch64-linux": "linux/arm64",
@@ -119,7 +78,12 @@ alias(
     visibility = ["//visibility:public"],
 )
 """.format(version = istio_version),
-    integrity = istio_integrity[exe_platform],
+    integrity = {
+        "aarch64-linux": "sha384-7QwlWKMcEpLkmV4/KsQqQtJMkZSqVTGiHbfmZAP3SIkHYwlelTEb1ZXXnvHozj+E",
+        "aarch64-macos": "sha384-MXVzEJiqKTD7HxdBjQ8ajB+tEFODx/oleV/x8NkJYrdkcZCIAU9vjZ7y2aaUHeGT",
+        "x86_64-linux": "sha384-MSVeSztitj36W8gzW5vL/94AW55oleUCy7M8GMljXshhrZ1YlcaiM1IFK8Czr2lK",
+        "x86_64-macos": "sha384-Mi8xQiY6fOtaPMmrVkVWr+4kDjSHI6PDXtkhlT8aO43wE8ulJHbKClwzi07GT6l4",
+    }[exe_platform],
     url = "https://github.com/istio/istio/releases/download/{version}/istio-{version}-{platform}.tar.gz".format(
         platform = {
             "aarch64-linux": "linux-arm64",
@@ -131,6 +95,7 @@ alias(
     ),
 ) for exe_platform in execution_platforms]
 
+# CNI plugins end up in the node Docker image, so we only need Linux / x86-64.
 http_archive(
     name = "cni-plugins-x86_64-linux",
     build_file_content = """
@@ -139,7 +104,7 @@ exports_files(
     visibility = ["//visibility:public"],
 )
 """,
-    integrity = cni_plugins_integrity,
+    integrity = "sha384-uB+qwUOWhcOryPE73I5m1UU0axXSmdbRIvQ8s7OFcky19JvgN2TOXdWvXU5mOOfq",
     url = "https://github.com/containernetworking/plugins/releases/download/v{version}/cni-plugins-linux-amd64-v{version}.tgz".format(
         version = cni_plugins_version,
     ),
@@ -153,7 +118,12 @@ exports_files(
     visibility = ["//visibility:public"],
 )
 """,
-    integrity = kustomize_integrity[exe_platform],
+    integrity = {
+        "aarch64-linux": "sha384-LRu1nlTiGZuPqC5Uq7p8C4CgfbieLudwuNBZf0zVtNe8XrQKovr495iRAXvJsW9J",
+        "aarch64-macos": "sha384-Yj+2r/vVoIAZNN4X8j2VeE3fGBlZyjTKyPGx8ZESBPqilJcwSaOZ15WUXak55SzK",
+        "x86_64-linux": "sha384-tgGdPFRh9am40ZbfDc8FzNJAEy4JHjaRaSOVQfCkuA69LSjj1QozrtSdJR51hahi",
+        "x86_64-macos": "sha384-SZPronUSoZCCpLTyr6qJm87nQ/5aV+2pUw7YGWHmqi6rT5SEJS55FXgCr8Dk6B5W",
+    }[exe_platform],
     url = "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv{version}/kustomize_v{version}_{platform}.tar.gz".format(
         platform = {
             "aarch64-linux": "linux_arm64",
@@ -173,7 +143,12 @@ exports_files(
     visibility = ["//visibility:public"],
 )
 """,
-    integrity = crictl_integrity[exe_platform],
+    integrity = {
+        "aarch64-linux": "sha384-e71ozsO5sADfH7r9Ikg9qibASQ/kZa3H2RpKXERuIEQoA6yUuDbINQ8y1QJ95xPG",
+        "aarch64-macos": "sha384-qurll9ISVrkffm1jxVQOnSAB8enrkMh0IX5/wVAt6MFo4PJ8nrz7LkvcC5CoqJkj",
+        "x86_64-linux": "sha384-Y/km7o8UwIKfqtEomXKj/SUmqtBGSohObYNThz1LfytVUdcL1eJwz3zweHMR9syP",
+        "x86_64-macos": "sha384-HI6s55ngdV13sqj4zJHgAnBVHzfEhvqQX7wdR/pN9ns1kU7Xhp4GTNMlziwhnKh6",
+    }[exe_platform],
     url = "https://github.com/kubernetes-sigs/cri-tools/releases/download/v{version}/crictl-v{version}-{platform}.tar.gz".format(
         platform = {
             "aarch64-linux": "linux-arm64",
@@ -185,28 +160,15 @@ exports_files(
     ),
 ) for exe_platform in execution_platforms]
 
-[http_archive(
-    name = "minikube-" + exe_platform,
-    build_file_content = """
-exports_files(
-    ["minikube"],
-    visibility = ["//visibility:public"],
-)
-""",
-    integrity = minikube_integrity[exe_platform],
-    url = "https://github.com/vimana-cloud/minikube/releases/download/v{version}/minikube-{platform}.tar.gz".format(
-        platform = {
-            "x86_64-linux": "linux-amd64",
-            "x86_64-macos": "darwin-amd64",
-        }[exe_platform],
-        version = minikube_version,
-    ),
-) for exe_platform in x86_64_platforms]
-
 [http_file(
     name = "kops-" + exe_platform,
     executable = True,
-    integrity = kops_integrity[exe_platform],
+    integrity = {
+        "aarch64-linux": "sha384-WaEd53Nf6EVVJE1Ek7CqO5YEQLDUNjHwsfEIwW3LezhFIuyCAQgFbATne4QZEVwa",
+        "aarch64-macos": "sha384-XmOHbJcofC2WsYfsqwRU3ZdEriZQeB4gp4F74UudERDbnQJN4Mjlr4JgL2Wq3S7H",
+        "x86_64-linux": "sha384-Zt9RqbvWROSEpt5/3UYlufepKNRsksdUI9jt35ZV+a4Y804JXttrxTlGSNevvbnG",
+        "x86_64-macos": "sha384-wvhwTqlgqpiJ2CPT+nrkZfwjqtHpMlQLpMTViDK+2NSNPjaCbR1IhORTQBVz8sii",
+    }[exe_platform],
     url = "https://github.com/kubernetes/kops/releases/download/v{version}/kops-{platform}".format(
         platform = {
             "aarch64-linux": "linux-arm64",
@@ -217,3 +179,24 @@ exports_files(
         version = kops_version,
     ),
 ) for exe_platform in execution_platforms]
+
+[http_archive(
+    name = "minikube-" + exe_platform,
+    build_file_content = """
+exports_files(
+    ["minikube"],
+    visibility = ["//visibility:public"],
+)
+""",
+    integrity = {
+        "x86_64-linux": "sha384-qtn6rs3jAV7TH+xSMHgQMVmzqQSGPaP9Zay+YaThfc2gbgAzFGx+2Ytp5aeQ9hur",
+        "x86_64-macos": "sha384-08uM+CNK3fJRkZcivvKfEOLEGoqx7KEq0ljI1pp6+Yt4CZO4sHnS6W1Ya0PkagZL",
+    }[exe_platform],
+    url = "https://github.com/vimana-cloud/minikube/releases/download/v{version}/minikube-{platform}.tar.gz".format(
+        platform = {
+            "x86_64-linux": "linux-amd64",
+            "x86_64-macos": "darwin-amd64",
+        }[exe_platform],
+        version = minikube_version,
+    ),
+) for exe_platform in x86_64_platforms]

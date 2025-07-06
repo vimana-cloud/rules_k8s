@@ -47,6 +47,12 @@ native_binary(
     visibility = ["//visibility:public"],
 )
 
+native_binary(
+    name = "crane",
+    src = format_platform("@crane-{}//:crane"),
+    visibility = ["//visibility:public"],
+)
+
 # These binaries are expected to be end up in Docker containers,
 # so you probably need the x86-64 / Linux version no matter what the execution platform is:
 

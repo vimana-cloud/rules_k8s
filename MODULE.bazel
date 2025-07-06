@@ -45,6 +45,9 @@ kops_version = "1.32.0"
 # https://github.com/vimana-cloud/minikube/releases
 minikube_version = "1.36.0-workd"
 
+# https://github.com/google/go-containerregistry/releases
+crane_version = "0.20.6"
+
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_file = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
@@ -200,3 +203,28 @@ exports_files(
         version = minikube_version,
     ),
 ) for exe_platform in x86_64_platforms]
+
+[http_archive(
+    name = "crane-" + exe_platform,
+    build_file_content = """
+exports_files(
+    ["crane"],
+    visibility = ["//visibility:public"],
+)
+""",
+    integrity = {
+        "aarch64-linux": "sha384-4pO8WN38FbpltJU5jT7hs4XZGPTVSiTRPuyj9TDoH9NXU29XmRiQpWrB/IQS6zVT",
+        "aarch64-macos": "sha384-tlhx18wZ48ifgXMSckyOW7kvDiAzBzFeRbassAerBGqnJGkxYyoqilmyzbe+twcY",
+        "x86_64-linux": "sha384-kKlu54d0oaSJufVtx2GBFIJydgdU97eho5uVPvuVirlUTX5SxYtJ1FiXnuLjgk43",
+        "x86_64-macos": "sha384-UdOZ38V57Y6phQ3rDqY+fWfod2oQJ1AvodTPUTYl4MaaZDGcbGS/OXhpSmbMhNF4",
+    }[exe_platform],
+    url = "https://github.com/google/go-containerregistry/releases/download/v{version}/go-containerregistry_{platform}.tar.gz".format(
+        platform = {
+            "aarch64-linux": "Linux_arm64",
+            "aarch64-macos": "Darwin_arm64",
+            "x86_64-linux": "Linux_x86_64",
+            "x86_64-macos": "Darwin_x86_64",
+        }[exe_platform],
+        version = crane_version,
+    ),
+) for exe_platform in execution_platforms]

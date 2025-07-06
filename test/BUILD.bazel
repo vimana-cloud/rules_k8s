@@ -9,6 +9,7 @@ binaries = [
     "@kustomize-{}//:kustomize",
     "@crictl-{}//:crictl",
     "@kops-{}//file",
+    "@crane-{}//:crane",
 ]
 
 # These binaries are only available on certain platforms,

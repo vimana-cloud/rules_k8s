@@ -56,7 +56,7 @@ do
     echo >&2 "Failed while running test setup action."
     exit 2
   }
-done
+done || exit $?  # Propagate any timeout error from the piped subshell.
 
 # kubectl will look for a client config
 # based on inherited environment variables `KUBECONFIG` and `HOME`.
@@ -105,7 +105,7 @@ fi
       echo >&2 "Failed to create initial object '$object'."
       exit 4
     }
-  done
+  done || exit $?  # Propagate any timeout error from the piped subshell.
 }
 creation_time=$(date +%s)
 

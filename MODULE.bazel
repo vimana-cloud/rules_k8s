@@ -24,31 +24,31 @@ aarch64_platforms = [
 execution_platforms = x86_64_platforms + aarch64_platforms
 
 # https://github.com/kubernetes/kubernetes/releases
-kubernetes_version = "1.32.3"
+kubernetes_version = "1.32.6"
 
 kubectl_integrity = {
-    "aarch64-linux": "sha384-992AvvKSad0hwynMImFhI9TCD0QB+4QxrCt0Nb13uK0ljkPJYBLAuhY5QIi8Gipu",
-    "aarch64-macos": "sha384-4mNi/qqncSSS4iiAysw3Kwq0WkhffD1xkZW3eRi/7OjZ/9lWem1QGyBst+FOKuf/",
-    "x86_64-linux": "sha384-PySELntns9AkQ3ZA4Tk74wH5uLuxBy630nbaGVSxaQD5peYL2QMGLHEpSiJqbkl9",
-    "x86_64-macos": "sha384-f0L13XaXXmrDv/pzmVlSvratDymq1QJDjA+6VanaTo8MPUL7laxe3gfHeUudUUKK",
+    "aarch64-linux": "sha384-FkeIl0AJPkzqID5G7uUrg/lIFHIPXr++wOTEwyk74eWb/1jbFHU70iwtV4BfO/kd",
+    "aarch64-macos": "sha384-3nUypOW6EVUeqa0CyRjiDdhBP5sjM3XalxTRZLbsO5nSgc75e1oh+YZO8pCi4+jq",
+    "x86_64-linux": "sha384-9M5TMPBnh1QLCZAYc9QDlPJzfaOH0JuOi2ptWUIht3rrLk36yK4aT3mpemIHdx2W",
+    "x86_64-macos": "sha384-+NICgcOnn5pg/FkReAhaN/TIXq3Qd4zdKWLfuuq/h9txjF5TeVb4deIuqR6al9YV",
 }
 
 # https://github.com/istio/istio/releases
-istio_version = "1.25.1"
+istio_version = "1.26.2"
 
 istio_integrity = {
-    "aarch64-linux": "sha384-2DvRrxG1+F/eB7NKeS/XBQumAUBysQ+zeP/WrEuYabDxM2tfQpRRRzy2/PCEcV0f",
-    "aarch64-macos": "sha384-Iwq7tmlRKrFySCkdIQExirUyQkIAXsSEtBPh7sYGGd2Z992imJK4rwej+VN4bKxg",
-    "x86_64-linux": "sha384-DeAYTbdwsyt3SJy6lHph8FOnMMEdZNC09bmyn94YNPA6RqVLX8lF6ZgNQ7/8T+r8",
-    "x86_64-macos": "sha384-8NdT/qPRvk0pbxPbvA1Of8v9cmDcFFc6qerM9QN1gT1MdlowgDQr7cptsniJt55X",
+    "aarch64-linux": "sha384-7QwlWKMcEpLkmV4/KsQqQtJMkZSqVTGiHbfmZAP3SIkHYwlelTEb1ZXXnvHozj+E",
+    "aarch64-macos": "sha384-MXVzEJiqKTD7HxdBjQ8ajB+tEFODx/oleV/x8NkJYrdkcZCIAU9vjZ7y2aaUHeGT",
+    "x86_64-linux": "sha384-MSVeSztitj36W8gzW5vL/94AW55oleUCy7M8GMljXshhrZ1YlcaiM1IFK8Czr2lK",
+    "x86_64-macos": "sha384-Mi8xQiY6fOtaPMmrVkVWr+4kDjSHI6PDXtkhlT8aO43wE8ulJHbKClwzi07GT6l4",
 }
 
 # https://github.com/containernetworking/plugins/releases
-cni_plugins_version = "1.6.2"
+cni_plugins_version = "1.7.1"
 
 # CNI plugins end up in the node Docker image,
 # so we only need Linux / x86-64.
-cni_plugins_integrity = "sha384-DE4Non3KHJ0T3aLjn0jkdoI33SXnY/4ee6MidCiZDMI/IRtSfQSz7ohqZyuAW/Oi"
+cni_plugins_integrity = "sha384-uB+qwUOWhcOryPE73I5m1UU0axXSmdbRIvQ8s7OFcky19JvgN2TOXdWvXU5mOOfq"
 
 # https://github.com/kubernetes-sigs/kustomize/releases
 kustomize_version = "5.6.0"
@@ -61,17 +61,17 @@ kustomize_integrity = {
 }
 
 # https://github.com/kubernetes-sigs/cri-tools/releases
-cri_tools_version = "1.32.0"
+cri_tools_version = "1.33.0"
 
 crictl_integrity = {
-    "aarch64-linux": "sha384-IdQKFIqnDJf7FW0ghTx/e5C8rEUN/CKrOgUp+i2hRhwuyo8cwP92xzRUPgk099Aa",
-    "aarch64-macos": "sha384-F9X0pfy11Sy8eiOuXP8+z8c0dxyKLIZJ0VGTyaERF+2HgKonf5qWBNPtPY+zwBb+",
-    "x86_64-linux": "sha384-QeIQzwO9jKnAxfyGfY1caKIr9nX6WpQ9lxNsVHvFag57Pq5W7RUlG5QCKg+czTlC",
-    "x86_64-macos": "sha384-1FBOnDDMEP45IH1twFgYW2YdHIcRCseeiEc6cuW7av9P56yO3rJ9xXiWyvXTssxe",
+    "aarch64-linux": "sha384-e71ozsO5sADfH7r9Ikg9qibASQ/kZa3H2RpKXERuIEQoA6yUuDbINQ8y1QJ95xPG",
+    "aarch64-macos": "sha384-qurll9ISVrkffm1jxVQOnSAB8enrkMh0IX5/wVAt6MFo4PJ8nrz7LkvcC5CoqJkj",
+    "x86_64-linux": "sha384-Y/km7o8UwIKfqtEomXKj/SUmqtBGSohObYNThz1LfytVUdcL1eJwz3zweHMR9syP",
+    "x86_64-macos": "sha384-HI6s55ngdV13sqj4zJHgAnBVHzfEhvqQX7wdR/pN9ns1kU7Xhp4GTNMlziwhnKh6",
 }
 
-# https://github.com/vimana-cloud/minikube/releases
 # https://github.com/kubernetes/minikube/releases
+# https://github.com/vimana-cloud/minikube/releases
 minikube_version = "1.36.0-workd"
 
 minikube_integrity = {

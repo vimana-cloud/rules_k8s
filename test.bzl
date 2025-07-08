@@ -1,23 +1,33 @@
 """ Rules and macros for running tests in the context of a running K8s cluster. """
 
 load("@bazel_skylib//lib:shell.bzl", "shell")
+load("//:resource.bzl", "K8sResources", "SetupActions")
 
 def _k8s_cluster_test_impl(ctx):
     # Gather all the setup executables and dependencies.
+    # If a rule provides an explicit setup actions provider, use that.
+    # Otherwise, assume each rule is a simple executable rule.
     setup = []
     setup_runfiles = []
     for action in ctx.attr.setup:
-        action = action[DefaultInfo]
-        setup.append(action.files_to_run.executable.short_path)
-        setup_runfiles.append(action.default_runfiles)
+        if SetupActions in action:
+            actions = action[SetupActions]
+            for executable in actions.executables.to_list():
+                setup.append(executable.short_path)
+            setup_runfiles.append(actions.runfiles)
+        else:
+            action = action[DefaultInfo]
+            setup.append(action.files_to_run.executable.short_path)
+            setup_runfiles.append(action.default_runfiles)
 
-    # `kubectl apply` only accepts certain file suffixes.
+    # If a rule provides an explicit K8s resources provider, use that.
+    # Otherwise, assume all the default outputs are resource files.
     objects = [
-        object.short_path
-        for object in ctx.files.objects
-        if object.short_path.endswith(".json") or
-           object.short_path.endswith(".yaml") or
-           object.short_path.endswith(".yml")
+        file.short_path
+        for object in ctx.attr.objects
+        for file in (
+            object[K8sResources].files.to_list() if K8sResources in object else object.files.to_list()
+        )
     ]
 
     # Parameterize the runner by expanding the template.
@@ -61,6 +71,9 @@ k8s_cluster_test = rule(
         "objects": attr.label_list(
             doc = "Initial Kubernetes API objects defined in YAML files." +
                   " Each object is created before the test is started.",
+            # If a rule provides an explicit K8s resources provider, use that.
+            # Otherwise, assume all the default outputs are resource files.
+            providers = [[K8sResources], []],
             allow_files = [".json", ".yaml"],
         ),
         "port_forward": attr.string_list_dict(
@@ -76,6 +89,9 @@ k8s_cluster_test = rule(
         ),
         "setup": attr.label_list(
             doc = "Executable targets to run before each test run.",
+            # If a rule provides an explicit setup actions provider, use that.
+            # Otherwise, assume each rule is a simple executable rule.
+            providers = [[SetupActions], []],
         ),
         "cleanup": attr.bool(
             doc = "Whether to delete the K8s namespace (and all the resources within it)" +

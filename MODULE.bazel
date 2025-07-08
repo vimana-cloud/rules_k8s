@@ -39,7 +39,7 @@ kustomize_version = "5.6.0"
 cri_tools_version = "1.33.0"
 
 # https://github.com/kubernetes/kops/releases
-kops_version = "1.32.0"
+kops_version = "1.32.1"
 
 # https://github.com/kubernetes/minikube/releases
 # https://github.com/vimana-cloud/minikube/releases
@@ -167,10 +167,10 @@ exports_files(
     name = "kops-" + exe_platform,
     executable = True,
     integrity = {
-        "aarch64-linux": "sha384-WaEd53Nf6EVVJE1Ek7CqO5YEQLDUNjHwsfEIwW3LezhFIuyCAQgFbATne4QZEVwa",
-        "aarch64-macos": "sha384-XmOHbJcofC2WsYfsqwRU3ZdEriZQeB4gp4F74UudERDbnQJN4Mjlr4JgL2Wq3S7H",
-        "x86_64-linux": "sha384-Zt9RqbvWROSEpt5/3UYlufepKNRsksdUI9jt35ZV+a4Y804JXttrxTlGSNevvbnG",
-        "x86_64-macos": "sha384-wvhwTqlgqpiJ2CPT+nrkZfwjqtHpMlQLpMTViDK+2NSNPjaCbR1IhORTQBVz8sii",
+        "aarch64-linux": "sha384-Ua9ZqDEnPVdpD5IudNN33eEsvAq1KmkQiYquPouwAzo7HLXhXuaUEWjE3E4rRKWC",
+        "aarch64-macos": "sha384-i5IIp2lr3WcW5UW/YUVcj0jXNX9X8ITw4IVS7UlcOczYwGRpqHDgameShIuHJC42",
+        "x86_64-linux": "sha384-iVjZkccTHXgbD8wD23vsZq3wosQvMCvh/w+uxy4ZOdFHLcgYMrZCUKwDiu4LsEbL",
+        "x86_64-macos": "sha384-jlSuqDHC7vVv2He1O43HopDnmWBEjrHbTfuNTC3wgtl1Y6RBgCU6erPle4P20zuI",
     }[exe_platform],
     url = "https://github.com/kubernetes/kops/releases/download/v{version}/kops-{platform}".format(
         platform = {

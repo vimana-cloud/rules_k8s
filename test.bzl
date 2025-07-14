@@ -4,6 +4,17 @@ load("@bazel_skylib//lib:shell.bzl", "shell")
 load("//:resource.bzl", "K8sResources", "SetupActions")
 
 def _k8s_cluster_test_impl(ctx):
+    # Check that none of the declared services are associated with multiple gateways.
+    service_gateways = {}
+    for gateway, services in ctx.attr.services.items():
+        for service in services:
+            if service in service_gateways:
+                fail(
+                    "Service '{}' assigned to conflicting gateways '{}' and '{}'"
+                        .format(service, service_gateways[service], gateway),
+                )
+            service_gateways[service] = gateway
+
     # Gather all the setup executables and dependencies.
     # If a rule provides an explicit setup actions provider, use that.
     # Otherwise, assume each rule is a simple executable rule.
@@ -37,11 +48,10 @@ def _k8s_cluster_test_impl(ctx):
         output = runner,
         substitutions = {
             "{{KUBECTL}}": shell.quote(ctx.file._kubectl_bin.short_path),
-            "{{OBJECTS}}": shell.quote(json.encode(objects)),
-            "{{PORT-FORWARD}}": shell.quote(json.encode(ctx.attr.port_forward)),
-            "{{HOSTS}}": shell.quote(json.encode(ctx.attr.hosts)),
             "{{TEST}}": shell.quote(ctx.executable.test.short_path),
             "{{SETUP}}": shell.quote(json.encode(setup)),
+            "{{OBJECTS}}": shell.quote(json.encode(objects)),
+            "{{SERVICES}}": shell.quote(json.encode(ctx.attr.services)),
             "{{CLEANUP}}": str(int(ctx.attr.cleanup)),
         },
         is_executable = True,
@@ -52,8 +62,7 @@ def _k8s_cluster_test_impl(ctx):
             .merge_all(setup_runfiles)
     return [
         DefaultInfo(executable = runner, runfiles = runfiles),
-        # Inherit `KUBECONFIG` and `HOME` from the host environment
-        # so kubectl can find a client configuration.
+        # Inherit `KUBECONFIG` and `HOME` from the host environment so `kubectl` can function.
         RunEnvironmentInfo(inherited_environment = ["KUBECONFIG", "HOME"]),
     ]
 
@@ -68,6 +77,12 @@ k8s_cluster_test = rule(
             allow_files = True,
             cfg = "exec",
         ),
+        "setup": attr.label_list(
+            doc = "Executable targets to run before creating any objects.",
+            # If a rule provides an explicit setup actions provider, use that.
+            # Otherwise, assume each rule is a simple executable rule.
+            providers = [[SetupActions], []],
+        ),
         "objects": attr.label_list(
             doc = "Initial Kubernetes API objects defined in YAML files." +
                   " Each object is created before the test is started.",
@@ -76,22 +91,10 @@ k8s_cluster_test = rule(
             providers = [[K8sResources], []],
             allow_files = [".json", ".yaml"],
         ),
-        "port_forward": attr.string_list_dict(
-            doc = "Port forwarding to cluster resources." +
-                  " Keys are resource names (e.g. 'svc/foo-gateway-istio')" +
-                  " and values are lists of colon-separated port pairs (e.g. '61803:443').",
-        ),
-        "hosts": attr.string_dict(
-            doc = "Map from hosts (domain names) to IP addresses." +
-                  " The contents of /etc/hosts will be overridden with this configuration" +
-                  " for the duration of the test." +
-                  " Can be used with `port_forward` to enable TLS-encrypted access to services.",
-        ),
-        "setup": attr.label_list(
-            doc = "Executable targets to run before each test run.",
-            # If a rule provides an explicit setup actions provider, use that.
-            # Otherwise, assume each rule is a simple executable rule.
-            providers = [[SetupActions], []],
+        "services": attr.string_list_dict(
+            doc = "Map gateways names to service domain names." +
+                  " Each gateway must have an external IP address. " +
+                  " The testing harness will set up transparent DNS and routing for each service.",
         ),
         "cleanup": attr.bool(
             doc = "Whether to delete the K8s namespace (and all the resources within it)" +

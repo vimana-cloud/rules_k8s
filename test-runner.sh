@@ -32,16 +32,14 @@ fi
 
 # Path to kubectl binary.
 kubectl={{KUBECTL}}
-# JSON-encoded array of paths to initial K8s resource files.
-objects={{OBJECTS}}
-# JSON-encoded object mapping resource names to arrays of colon-separated port pairs.
-port_forward={{PORT-FORWARD}}
-# JSON-encoded object mapping host names to IP addresses.
-hosts={{HOSTS}}
 # Path to test executable.
 test={{TEST}}
 # JSON-encoded array of paths to setup executables.
 setup={{SETUP}}
+# JSON-encoded array of paths to initial K8s resource files.
+objects={{OBJECTS}}
+# JSON-encoded object mapping service names to gateway names.
+services={{SERVICES}}
 # Whether to delete the K8s namespace on exit (1 = yes / 0 = no).
 cleanup={{CLEANUP}}
 
@@ -56,7 +54,7 @@ do
     echo >&2 "Failed while running test setup action."
     exit 2
   }
-done || exit $?  # Propagate any timeout error from the piped subshell.
+done || exit $?  # Propagate any error from the piped subshell.
 
 # kubectl will look for a client config
 # based on inherited environment variables `KUBECONFIG` and `HOME`.
@@ -105,7 +103,7 @@ fi
       echo >&2 "Failed to create initial object '$object'."
       exit 4
     }
-  done || exit $?  # Propagate any timeout error from the piped subshell.
+  done || exit $?  # Propagate any error from the piped subshell.
 }
 creation_time=$(date +%s)
 
@@ -122,49 +120,56 @@ creation_time=$(date +%s)
       # (minus the 'pod/' prefix).
       "$kubectl" --namespace="$namespace" logs --follow --all-containers "$pod" \
         > "${artifacts}/${pod:4}.logs.txt" &
-    done || exit $?  # Propagate any timeout error from the piped subshell.
+    done || exit $?  # Propagate any error from the piped subshell.
 ready_time=$(date +%s)
 echo >&2 "All pods are ready $(( ready_time - creation_time )) seconds after creation."
 
-# Set up port forwarding, if configured.
-[ "$port_forward" = '{}' ] && echo >&2 "No port-forwarding configured." || {
-  # Use `jq` to denormalize the JSON-encoded object:
-  # each item of each value array is printed on its own line,
-  # immediately preceded by its key on the line above
-  # (so each key appears as many times as it has items in its value array).
-  <<< "$port_forward" jq --raw-output 'to_entries[] | .key as $key | .value[] | "\($key)\n\(.)"' \
-    | while read -r resource
-  do
-    # Keys and values are printed on separate lines,
-    # so we know that the total number of lines is a multiple of 2.
-    read -r mapping
-    # Port-forward in the background. It will stop when the namespace is deleted.
-    "$kubectl" --namespace="$namespace" port-forward "$resource" "$mapping" &
-  done
-
-  # Port-forwarding can take time. Poll each local port until it becomes available.
-  start_time=$(date +%s)
-  <<< "$port_forward" jq --raw-output 'to_entries[] | .value[] | split(":")[0]' \
-    | while read -r port
-      do
-        until ( echo > "/dev/tcp/localhost/$port" ) 2> /dev/null
-        do
-          sleep 0.5s
-          # Time out after 10 seconds.
-          current_time=$(date +%s)
-          (( current_time - start_time > 10 )) && {
-            echo >&2 "Timed out forwarding port $port."
-            exit 6
-          } || true  # The timeout check must have a successful status.
-        done
-      done || exit $?  # Propagate any timeout error from the piped subshell.
+# Look up the external IP address of a gateway by name.
+# It may take a few seconds to become available after the gateway is created.
+function lookup-external-ip {
+  local gateway="$1"
+  local attempt="${2:-0}"
+  local address="$(
+    "$kubectl" get service "$gateway" \
+      --namespace="$namespace" \
+      --output=jsonpath='{.status.loadBalancer.ingress[0].ip}'
+  )"
+  [[ $? != 0 ]] && {
+    echo >&2 "Declared gateway '$gateway' does not exist."
+    return 6
+  }
+  if [ -n "$address" ]
+  then
+    echo "$address"
+  else
+    (( attempt >= 5 )) && {
+      echo >&2 "Gateway '$gateway' lacks an external IP address after $attempt seconds."
+      echo >&2 "If this is a minikube cluster, make sure 'minikube tunnel' is running."
+      return 7
+    }
+    sleep 1
+    lookup-external-ip "$gateway" $((attempt + 1))
+  fi
 }
 
-# Set up the override file for /etc/hosts.
+# Set up the override file for /etc/hosts, used to configure service routing.
 tmp_hosts="$(mktemp)"
+[ "$services" = '{}' ] && echo >&2 "No service routing configured." || {
+  # Use `jq` to print each key (gateway name) on its own line,
+  # followed by the values (service names, concatenated with spaces) on the line below.
+  <<< "$services" jq --raw-output 'to_entries[] | "\(.key)\n\(.value | join(" "))"' \
+    | while read -r gateway
+  do
+    address="$(lookup-external-ip "$gateway")"
+    status=$?
+    [[ $status != 0 ]] && exit $status  # Propagate any error from the function call.
+    # Keys and values are printed on separate lines,
+    # so we know that the total number of lines is a multiple of 2.
+    read -r services
+    echo "$address $services"
+  done || exit $?  # Propagate any error from the piped subshell.
+} > "$tmp_hosts"
 echo >&2 "Using '$tmp_hosts' to override '/etc/hosts'."
-# Use `jq` to print each value-key pair on its own line in the override file.
-<<< "$hosts" jq --raw-output 'to_entries[] | "\(.value) \(.key)"' > "$tmp_hosts"
 
 # Run the test in a new mount namespace, with the override file bind-mounted over /etc/hosts.
 cmd="mount --bind '$tmp_hosts' /etc/hosts && echo >&2 'Running test...' && exec '$test'"
@@ -186,7 +191,7 @@ if (( cleanup ))
 then
   # Disable automatic cleanup, because we're calling it explicitly instead.
   trap - EXIT
-  delete-test-namespace || exit 7
+  delete-test-namespace || exit 8
 fi
 
 exit 0

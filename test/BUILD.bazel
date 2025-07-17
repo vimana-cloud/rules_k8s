@@ -10,14 +10,13 @@ binaries = [
     "@crictl-{}//:crictl",
     "@kops-{}//file",
     "@crane-{}//:crane",
+    "@minikube-{}//:minikube",
 ]
 
 # These binaries are only available on certain platforms,
 # so hardcode all possible values.
 hardcoded_binaries = [
     "@cni-plugins-x86_64-linux//:host-local",
-    "@minikube-x86_64-linux//:minikube",
-    "@minikube-x86_64-macos//:minikube",
 ]
 
 # Download all remote files for all platforms

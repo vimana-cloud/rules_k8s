@@ -19,7 +19,7 @@ the following pre-built binaries:
 - `//:kubectl`
 - `//:kustomize`
 - `//:crictl`
-- `//:minikube-bin` (x86-64 only) - The [Vimana fork] of [Minikube]
+- `//:minikube-bin` - The [Vimana fork] of [Minikube]
   with support for the `workd` container runtime.
 - `//:minikube` - Wrapper script around the raw `:minikube-bin` binary
   that makes it invoke `:kubectl` when it searches the `PATH` for "kubectl".

@@ -1,13 +1,10 @@
 # TODO: Figure out how to dedupe this list with `MODULE.bazel`.
-x86_64_platforms = [
+execution_platforms = [
+    "aarch64-linux",
+    "aarch64-macos",
     "x86_64-linux",
     "x86_64-macos",
 ]
-aarch64_platforms = [
-    "aarch64-linux",
-    "aarch64-macos",
-]
-execution_platforms = x86_64_platforms + aarch64_platforms
 
 def format_platform(template):
     """ Format a template string with the current execution platform. """
@@ -17,17 +14,4 @@ def format_platform(template):
             for platform in execution_platforms
         },
         no_match_error = "Only (Linux | MacOS) & (Arm64 | x86-64) currently supported",
-    )
-
-def format_platform_x86(template):
-    """
-    Format a template string with the current execution platform,
-    only supporting the x86-64 architecture.
-    """
-    return select(
-        {
-            "//:exe-" + platform: template.format(platform)
-            for platform in x86_64_platforms
-        },
-        no_match_error = "Only (Linux | MacOS) on x86-64 currently supported",
     )

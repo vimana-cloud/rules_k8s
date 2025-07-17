@@ -1,7 +1,7 @@
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:native_binary.bzl", "native_binary")
 load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
-load(":private.bzl", "execution_platforms", "format_platform", "format_platform_x86")
+load(":private.bzl", "execution_platforms", "format_platform")
 
 exports_files(["test-runner.sh"])
 
@@ -53,26 +53,10 @@ native_binary(
     visibility = ["//visibility:public"],
 )
 
-# These binaries are expected to be end up in Docker containers,
-# so you probably need the x86-64 / Linux version no matter what the execution platform is:
-
-native_binary(
-    name = "crictl-x86_64-linux",
-    src = "@crictl-x86_64-linux//:crictl",
-    visibility = ["//visibility:public"],
-)
-
-native_binary(
-    name = "host-local-x86_64-linux",
-    src = "@cni-plugins-x86_64-linux//:host-local",
-    visibility = ["//visibility:public"],
-)
-
 # The native minikube binary has to be wrapped in a script (see below).
 native_binary(
     name = "minikube-bin",
-    # Minikube does not yet officially support Arm.
-    src = format_platform_x86("@minikube-{}//:minikube"),
+    src = format_platform("@minikube-{}//:minikube"),
     visibility = ["//visibility:public"],
 )
 
@@ -93,5 +77,20 @@ sh_binary(
 sh_binary(
     name = "tls-generate",
     srcs = ["tls-generate.sh"],
+    visibility = ["//visibility:public"],
+)
+
+# These binaries are expected to end up in Docker containers,
+# so you probably need the x86-64 / Linux version no matter what the execution platform is:
+
+native_binary(
+    name = "crictl-x86_64-linux",
+    src = "@crictl-x86_64-linux//:crictl",
+    visibility = ["//visibility:public"],
+)
+
+native_binary(
+    name = "host-local-x86_64-linux",
+    src = "@cni-plugins-x86_64-linux//:host-local",
     visibility = ["//visibility:public"],
 )

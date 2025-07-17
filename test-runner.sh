@@ -24,14 +24,6 @@ then
   exit 1
 fi
 
-if ! which jq > /dev/null
-then
-  echo >&2 "This test uses 'jq' to parse JSON parameters. Make sure it's installed."
-  exit 1
-fi
-
-# Path to kubectl binary.
-kubectl={{KUBECTL}}
 # Path to test executable.
 test={{TEST}}
 # JSON-encoded array of paths to setup executables.
@@ -42,13 +34,17 @@ objects={{OBJECTS}}
 services={{SERVICES}}
 # Whether to delete the K8s namespace on exit (1 = yes / 0 = no).
 cleanup={{CLEANUP}}
+# Path to `kubectl` binary.
+kubectl={{KUBECTL}}
+# Path to `jq` binary.
+jq={{JQ}}
 
 # Path to directory where artifacts should be stored.
 # https://bazel.build/reference/test-encyclopedia#initial-conditions
 artifacts="${TEST_UNDECLARED_OUTPUTS_DIR}"
 
 # Use `jq` to iterate over the JSON-encoded array of setup executables.
-<<< "$setup" jq --raw-output '.[]' | while read -r action
+<<< "$setup" "$jq" --raw-output '.[]' | while read -r action
 do
   "$action" || {
     echo >&2 "Failed while running test setup action."
@@ -97,7 +93,7 @@ fi
 # Create the initial objects for this test, if there are any.
 [ "$objects" = '[]' ] && echo >&2 "No initial objects specified." || {
   # Use `jq` to iterate over the JSON-encoded array of objects.
-  <<< "$objects" jq --raw-output '.[]' | while read -r object
+  <<< "$objects" "$jq" --raw-output '.[]' | while read -r object
   do
     "$kubectl" --namespace="$namespace" apply --filename="$object" || {
       echo >&2 "Failed to create initial object '$object'."
@@ -157,7 +153,7 @@ tmp_hosts="$(mktemp)"
 [ "$services" = '{}' ] && echo >&2 "No service routing configured." || {
   # Use `jq` to print each key (gateway name) on its own line,
   # followed by the values (service names, concatenated with spaces) on the line below.
-  <<< "$services" jq --raw-output 'to_entries[] | "\(.key)\n\(.value | join(" "))"' \
+  <<< "$services" "$jq" --raw-output 'to_entries[] | "\(.key)\n\(.value | join(" "))"' \
     | while read -r gateway
   do
     address="$(lookup-external-ip "$gateway")"

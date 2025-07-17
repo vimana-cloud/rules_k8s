@@ -3,6 +3,8 @@
 load("@bazel_skylib//lib:shell.bzl", "shell")
 load("//:resource.bzl", "K8sResources", "SetupActions")
 
+_jq_toolchain_type = "@aspect_bazel_lib//lib:jq_toolchain_type"
+
 def _k8s_cluster_test_impl(ctx):
     # Check that none of the declared services are associated with multiple gateways.
     service_gateways = {}
@@ -41,25 +43,29 @@ def _k8s_cluster_test_impl(ctx):
         )
     ]
 
+    jq_toolchain = ctx.toolchains[_jq_toolchain_type]
+
     # Parameterize the runner by expanding the template.
     runner = ctx.actions.declare_file(ctx.label.name)
     ctx.actions.expand_template(
         template = ctx.file._runner_template,
         output = runner,
         substitutions = {
-            "{{KUBECTL}}": shell.quote(ctx.file._kubectl_bin.short_path),
             "{{TEST}}": shell.quote(ctx.executable.test.short_path),
             "{{SETUP}}": shell.quote(json.encode(setup)),
             "{{OBJECTS}}": shell.quote(json.encode(objects)),
             "{{SERVICES}}": shell.quote(json.encode(ctx.attr.services)),
             "{{CLEANUP}}": str(int(ctx.attr.cleanup)),
+            "{{KUBECTL}}": shell.quote(ctx.file._kubectl_bin.short_path),
+            "{{JQ}}": shell.quote(jq_toolchain.jqinfo.bin.short_path),
         },
         is_executable = True,
     )
     runfiles = \
         ctx.runfiles(files = ctx.files._kubectl_bin + ctx.files.objects) \
             .merge(ctx.attr.test[DefaultInfo].default_runfiles) \
-            .merge_all(setup_runfiles)
+            .merge_all(setup_runfiles) \
+            .merge(jq_toolchain.default.default_runfiles)
     return [
         DefaultInfo(executable = runner, runfiles = runfiles),
         # Inherit `KUBECONFIG` and `HOME` from the host environment so `kubectl` can function.
@@ -112,4 +118,5 @@ k8s_cluster_test = rule(
             cfg = "exec",
         ),
     },
+    toolchains = [_jq_toolchain_type],
 )

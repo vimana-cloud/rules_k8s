@@ -9,23 +9,27 @@ A Bazel module with tools for working with Kubernetes (K8s).
 
 ## Binaries
 
-Provides a custom tool [`//:tls-generate`](tls-generate.sh)
-to generate either self-signed CA credentials or TLS certificates
-using OpenSSL.
-
-Automatically downloads and makes available
+Downloads and makes available
 the following pre-built binaries:
 
 - `//:kubectl`
+- `//:istioctl`
 - `//:kustomize`
 - `//:crictl`
-- `//:minikube-bin` - The [Vimana fork] of [Minikube]
+- `//:kops`
+- `//:crane`
+- `//:minikube-bin` - The [Vimana fork] of [minikube]
   with support for the `workd` container runtime.
 - `//:minikube` - Wrapper script around the raw `:minikube-bin` binary
   that makes it invoke `:kubectl` when it searches the `PATH` for "kubectl".
 
+Also provides a custom tool [`//:tls-generate`]
+to generate either self-signed CA credentials or TLS certificates
+using OpenSSL.
+
 [Vimana fork]: https://github.com/vimana-cloud/minikube
-[Minikube]: https://minikube.sigs.k8s.io/
+[minikube]: https://minikube.sigs.k8s.io/
+[`//:tls-generate`]: tls-generate.sh
 
 ## Caveats
 

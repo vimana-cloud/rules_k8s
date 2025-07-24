@@ -3,7 +3,7 @@
 # Run this script from the root directory of the Bazel module.
 #
 # Continuously tries to run a 'predicate' test
-# to verify remote dependency checksums in a `module` file.
+# to verify remote dependency checksums in a module file.
 # Checksum failures are expected to contain the follow string:
 #
 #     Checksum was <actual> but wanted <expected>

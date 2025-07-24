@@ -20,7 +20,7 @@ execution_platforms = [
 ]
 
 # https://github.com/kubernetes/kubernetes/releases
-kubernetes_version = "1.32.6"
+kubernetes_version = "1.33.3"
 
 # https://github.com/helm/helm/releases
 helm_version = "3.18.4"
@@ -29,7 +29,7 @@ helm_version = "3.18.4"
 cni_plugins_version = "1.7.1"
 
 # https://github.com/kubernetes-sigs/kustomize/releases
-kustomize_version = "5.6.0"
+kustomize_version = "5.7.1"
 
 # https://github.com/kubernetes-sigs/cri-tools/releases
 cri_tools_version = "1.33.0"
@@ -52,10 +52,10 @@ http_file = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_
     name = "kubectl-" + exe_platform,
     executable = True,
     integrity = {
-        "aarch64-linux": "sha384-FkeIl0AJPkzqID5G7uUrg/lIFHIPXr++wOTEwyk74eWb/1jbFHU70iwtV4BfO/kd",
-        "aarch64-macos": "sha384-3nUypOW6EVUeqa0CyRjiDdhBP5sjM3XalxTRZLbsO5nSgc75e1oh+YZO8pCi4+jq",
-        "x86_64-linux": "sha384-9M5TMPBnh1QLCZAYc9QDlPJzfaOH0JuOi2ptWUIht3rrLk36yK4aT3mpemIHdx2W",
-        "x86_64-macos": "sha384-+NICgcOnn5pg/FkReAhaN/TIXq3Qd4zdKWLfuuq/h9txjF5TeVb4deIuqR6al9YV",
+        "aarch64-linux": "sha384-8Svx0O0mf/pjqxC1Nu9+uctHXRU5lWeSnZN8KTxoGdf78rEDxq8e9vqQ99WUXNPF",
+        "aarch64-macos": "sha384-AxIePjQ3AK7DgdfmgMQTD/SoigK5UQgmYYz9WUqgokEWarRYcH6B76tsDS1+rT/e",
+        "x86_64-linux": "sha384-4R5HCub3DA9gUHOPlDlPLAHD0XmXNWINrWUI5PFtdWad+kA8pxhS+FUUJ5jP4jBj",
+        "x86_64-macos": "sha384-G2pD3jYDO36zD/IvHlyEI8erjJvoXjDlIgp4tnlEGjPa1WlS+JavYKuU2+LIQYw0",
     }[exe_platform],
     url = "https://dl.k8s.io/release/v{version}/bin/{platform}/kubectl".format(
         platform = {
@@ -119,10 +119,10 @@ exports_files(
 )
 """,
     integrity = {
-        "aarch64-linux": "sha384-LRu1nlTiGZuPqC5Uq7p8C4CgfbieLudwuNBZf0zVtNe8XrQKovr495iRAXvJsW9J",
-        "aarch64-macos": "sha384-Yj+2r/vVoIAZNN4X8j2VeE3fGBlZyjTKyPGx8ZESBPqilJcwSaOZ15WUXak55SzK",
-        "x86_64-linux": "sha384-tgGdPFRh9am40ZbfDc8FzNJAEy4JHjaRaSOVQfCkuA69LSjj1QozrtSdJR51hahi",
-        "x86_64-macos": "sha384-SZPronUSoZCCpLTyr6qJm87nQ/5aV+2pUw7YGWHmqi6rT5SEJS55FXgCr8Dk6B5W",
+        "aarch64-linux": "sha384-rcKrqx3ALePhxd6vwc+FhdYLEGXm/SZHCu7mf2d6DZq4/HwfDue551NqKuy/y05D",
+        "aarch64-macos": "sha384-2silo+1sZ90mMptugOWv0L2DKLugLniH1idUl8lX4CAvkDWaxI2AIILpC62iRBfN",
+        "x86_64-linux": "sha384-tr5RdeSCHgsBGJI833z5L5CLyR02gky/Vym8yXMwUXTbZDmo3rPb7YounzkuP355",
+        "x86_64-macos": "sha384-UIpvE3HGbug5V70g7IUyKUGzksnp0XkXjZXMDqOYOeOnBHbyAHXx08/G+xVv7TW+",
     }[exe_platform],
     url = "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv{version}/kustomize_v{version}_{platform}.tar.gz".format(
         platform = {

@@ -24,8 +24,8 @@ native_binary(
 )
 
 native_binary(
-    name = "istioctl",
-    src = format_platform("@istio-{}//:istioctl"),
+    name = "helm",
+    src = format_platform("@helm-{}//:helm"),
     visibility = ["//visibility:public"],
 )
 

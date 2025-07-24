@@ -5,7 +5,7 @@ load("//:private.bzl", "execution_platforms")
 # `{}` is a placeholder for the platform name. See `MODULE.bazel`.
 binaries = [
     "@kubectl-{}//file",
-    "@istio-{}//:istioctl",
+    "@helm-{}//:helm",
     "@kustomize-{}//:kustomize",
     "@crictl-{}//:crictl",
     "@kops-{}//file",

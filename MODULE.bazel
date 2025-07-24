@@ -22,8 +22,8 @@ execution_platforms = [
 # https://github.com/kubernetes/kubernetes/releases
 kubernetes_version = "1.32.6"
 
-# https://github.com/istio/istio/releases
-istio_version = "1.26.2"
+# https://github.com/helm/helm/releases
+helm_version = "3.18.4"
 
 # https://github.com/containernetworking/plugins/releases
 cni_plugins_version = "1.7.1"
@@ -68,29 +68,30 @@ http_file = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_
     ),
 ) for exe_platform in execution_platforms]
 
+helm_platforms = {
+    "aarch64-linux": "linux-arm64",
+    "aarch64-macos": "darwin-arm64",
+    "x86_64-linux": "linux-amd64",
+    "x86_64-macos": "darwin-amd64",
+}
 [http_archive(
-    name = "istio-" + exe_platform,
+    name = "helm-" + exe_platform,
     build_file_content = """
 alias(
-    name = "istioctl",
-    actual = "istio-{version}/bin/istioctl",
+    name = "helm",
+    actual = "{platform}/helm",
     visibility = ["//visibility:public"],
 )
-""".format(version = istio_version),
+""".format(platform = helm_platforms[exe_platform]),
     integrity = {
-        "aarch64-linux": "sha384-7QwlWKMcEpLkmV4/KsQqQtJMkZSqVTGiHbfmZAP3SIkHYwlelTEb1ZXXnvHozj+E",
-        "aarch64-macos": "sha384-MXVzEJiqKTD7HxdBjQ8ajB+tEFODx/oleV/x8NkJYrdkcZCIAU9vjZ7y2aaUHeGT",
-        "x86_64-linux": "sha384-MSVeSztitj36W8gzW5vL/94AW55oleUCy7M8GMljXshhrZ1YlcaiM1IFK8Czr2lK",
-        "x86_64-macos": "sha384-Mi8xQiY6fOtaPMmrVkVWr+4kDjSHI6PDXtkhlT8aO43wE8ulJHbKClwzi07GT6l4",
+        "aarch64-linux": "sha384-rcpf/7BFNcX6qgwRRZqea0FG+C0cTtdDoc+a6C473JpX5z+0jtT3rZksS3en5WtV",
+        "aarch64-macos": "sha384-H0PiewEk1WKjrNYic4LbQBYFCwVaZJfTc780VCQ6IYz+k/4OWXv8jCtUTn7ykrQu",
+        "x86_64-linux": "sha384-nttBb9Ua6pl2w9xMPjapgxTH/FMHSVPTSQkxQf1bFA1egPmF4cculfhkr5G5O1/z",
+        "x86_64-macos": "sha384-be4y5S8SEJdLilGwVafqZ+rrlneibQE+SVBioSkmSP1kiIgT30KoId2lXZ3bl/Yf",
     }[exe_platform],
-    url = "https://github.com/istio/istio/releases/download/{version}/istio-{version}-{platform}.tar.gz".format(
-        platform = {
-            "aarch64-linux": "linux-arm64",
-            "aarch64-macos": "osx-arm64",
-            "x86_64-linux": "linux-amd64",
-            "x86_64-macos": "osx-amd64",
-        }[exe_platform],
-        version = istio_version,
+    url = "https://get.helm.sh/helm-v{version}-{platform}.tar.gz".format(
+        platform = helm_platforms[exe_platform],
+        version = helm_version,
     ),
 ) for exe_platform in execution_platforms]
 

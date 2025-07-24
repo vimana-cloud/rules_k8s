@@ -13,7 +13,7 @@ Downloads and makes available
 the following pre-built binaries:
 
 - `//:kubectl`
-- `//:istioctl`
+- `//:helm`
 - `//:kustomize`
 - `//:crictl`
 - `//:kops`

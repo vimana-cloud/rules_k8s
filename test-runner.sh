@@ -30,7 +30,7 @@ test={{TEST}}
 setup={{SETUP}}
 # JSON-encoded array of paths to initial K8s resource files.
 objects={{OBJECTS}}
-# JSON-encoded object mapping service names to gateway names.
+# JSON-encoded object mapping gateway names to lists of service names.
 services={{SERVICES}}
 # Whether to delete the K8s namespace on exit (1 = yes / 0 = no).
 cleanup={{CLEANUP}}
@@ -75,7 +75,10 @@ namespace="test-$(uuidgen)"
 # In the latter, the cleanup function can cause the test to fail.
 function delete-test-namespace {
   local start_time=$(date +%s)
-  if "$kubectl" delete namespace "$namespace" --timeout=40s
+  # When Envoy Gateway is running in Gateway Namespace mode,
+  # The time required to delete the test namespace completely dominates the overall test runtime.
+  # TODO: See if this can somehow be sped up.
+  if "$kubectl" delete namespace "$namespace" --timeout=240s
   then
     local end_time=$(date +%s)
     echo >&2 "Successfully cleaned up the test namespace in $(( end_time - start_time )) seconds."
@@ -131,7 +134,7 @@ function lookup-external-ip {
       --output=jsonpath='{.status.loadBalancer.ingress[0].ip}'
   )"
   [[ $? != 0 ]] && {
-    echo >&2 "Declared gateway '$gateway' does not exist."
+    echo >&2 "Declared gateway '$gateway' does not exist in the test namespace."
     return 6
   }
   if [ -n "$address" ]

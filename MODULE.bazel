@@ -37,6 +37,9 @@ cri_tools_version = "1.33.0"
 # https://github.com/kubernetes/kops/releases
 kops_version = "1.32.1"
 
+# https://github.com/operator-framework/operator-sdk/releases
+operator_sdk_version = "1.41.1"
+
 # https://github.com/kubernetes/minikube/releases
 # https://github.com/vimana-cloud/minikube/releases
 minikube_version = "1.36.0-workd.3"
@@ -177,6 +180,26 @@ exports_files(
             "x86_64-macos": "darwin-amd64",
         }[exe_platform],
         version = kops_version,
+    ),
+) for exe_platform in execution_platforms]
+
+[http_file(
+    name = "operator-sdk-" + exe_platform,
+    executable = True,
+    integrity = {
+        "aarch64-linux": "sha384-/S6u9ECuVBBfQnr/pO13BqO2ywRv0wgvVadCwxyLNy0pQoVln+CoHteTQLo3LuhF",
+        "aarch64-macos": "sha384-B7z6NRp4U4uvZiMNb565OYzThGvaWFaVbD/nqcuHGP2tB0jXN3uoNBAhR6LezdYc",
+        "x86_64-linux": "sha384-SKJv0yQEFooyBRtxQPjn4FZVNhqGbpq7yx6oDvWpT3WGoBIY91MOcPUID0hdatkk",
+        "x86_64-macos": "sha384-7WF/IsT/P4J8TlvCh7CSSk1jFz9WYX5C+Lmzb0oKai0a+vvx8UNA+AhGrFvwmOV6",
+    }[exe_platform],
+    url = "https://github.com/operator-framework/operator-sdk/releases/download/v{version}/operator-sdk_{platform}".format(
+        platform = {
+            "aarch64-linux": "linux_arm64",
+            "aarch64-macos": "darwin_arm64",
+            "x86_64-linux": "linux_amd64",
+            "x86_64-macos": "darwin_amd64",
+        }[exe_platform],
+        version = operator_sdk_version,
     ),
 ) for exe_platform in execution_platforms]
 

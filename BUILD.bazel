@@ -48,6 +48,12 @@ native_binary(
 )
 
 native_binary(
+    name = "operator-sdk",
+    src = format_platform("@operator-sdk-{}//file"),
+    visibility = ["//visibility:public"],
+)
+
+native_binary(
     name = "crane",
     src = format_platform("@crane-{}//:crane"),
     visibility = ["//visibility:public"],

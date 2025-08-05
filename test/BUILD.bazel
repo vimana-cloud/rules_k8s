@@ -9,6 +9,7 @@ binaries = [
     "@kustomize-{}//:kustomize",
     "@crictl-{}//:crictl",
     "@kops-{}//file",
+    "@operator-sdk-{}//file",
     "@crane-{}//:crane",
     "@minikube-{}//:minikube",
 ]

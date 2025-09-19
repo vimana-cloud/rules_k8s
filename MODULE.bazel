@@ -45,6 +45,9 @@ kops_version = "1.32.1"
 # https://github.com/operator-framework/operator-sdk/releases
 operator_sdk_version = "1.41.1"
 
+# https://github.com/kubernetes-sigs/controller-tools/releases
+controller_tools_version = "0.19.0"
+
 # https://github.com/kubernetes/minikube/releases
 # https://github.com/vimana-cloud/minikube/releases
 minikube_version = "1.36.0-workd.4"
@@ -266,6 +269,26 @@ exports_files(
             "x86_64-macos": "darwin_amd64",
         }[exe_platform],
         version = operator_sdk_version,
+    ),
+) for exe_platform in execution_platforms]
+
+[http_file(
+    name = "controller-gen-" + exe_platform,
+    executable = True,
+    integrity = {
+        "aarch64-linux": "sha384-GlPisQ9VwsIdZ4hqLSjl+fMRTJm+faUPgTWyyTPa5DNg7nCL1rDDVORn2/esluqG",
+        "aarch64-macos": "sha384-iQSDVVU9iiUeDlW1E0gi+EweyZKcCXVO3ABkmvpn7GLRPTmqwMEHILl6eLrwAoA6",
+        "x86_64-linux": "sha384-PmbZLpovXiraxmmokhNoZ9XITn2eYqSs2u8erFzq4eX8BJsA+QbBaETREuYP+15+",
+        "x86_64-macos": "sha384-RWp3N0j++AFWbkpocYTXAIcvcFZ4M52rJNrGytiL5UKuSqyxmIiszxnHvJrKX/np",
+    }[exe_platform],
+    url = "https://github.com/kubernetes-sigs/controller-tools/releases/download/v{version}/controller-gen-{platform}".format(
+        platform = {
+            "aarch64-linux": "linux-arm64",
+            "aarch64-macos": "darwin-arm64",
+            "x86_64-linux": "linux-amd64",
+            "x86_64-macos": "darwin-amd64",
+        }[exe_platform],
+        version = controller_tools_version,
     ),
 ) for exe_platform in execution_platforms]
 

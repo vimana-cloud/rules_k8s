@@ -11,6 +11,7 @@ binaries = [
     "@crictl-{}//:crictl",
     "@kops-{}//file",
     "@operator-sdk-{}//file",
+    "@controller-gen-{}//file",
     "@crane-{}//:crane",
     "@minikube-{}//:minikube",
 ]

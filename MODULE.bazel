@@ -22,6 +22,11 @@ execution_platforms = [
 # https://github.com/kubernetes/kubernetes/releases
 kubernetes_version = "1.33.3"
 
+# To find the best-tested version of etcd for a given version of K8s,
+# check the changelog, e.g.
+# https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.33.md
+etcd_version = "3.5.21"
+
 # https://github.com/helm/helm/releases
 helm_version = "3.18.4"
 
@@ -51,6 +56,13 @@ http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "ht
 
 http_file = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
 
+k8s_platforms = {
+    "aarch64-linux": "linux/arm64",
+    "aarch64-macos": "darwin/arm64",
+    "x86_64-linux": "linux/amd64",
+    "x86_64-macos": "darwin/amd64",
+}
+
 [http_file(
     name = "kubectl-" + exe_platform,
     executable = True,
@@ -60,14 +72,68 @@ http_file = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_
         "x86_64-linux": "sha384-4R5HCub3DA9gUHOPlDlPLAHD0XmXNWINrWUI5PFtdWad+kA8pxhS+FUUJ5jP4jBj",
         "x86_64-macos": "sha384-G2pD3jYDO36zD/IvHlyEI8erjJvoXjDlIgp4tnlEGjPa1WlS+JavYKuU2+LIQYw0",
     }[exe_platform],
-    url = "https://dl.k8s.io/release/v{version}/bin/{platform}/kubectl".format(
-        platform = {
-            "aarch64-linux": "linux/arm64",
-            "aarch64-macos": "darwin/arm64",
-            "x86_64-linux": "linux/amd64",
-            "x86_64-macos": "darwin/amd64",
-        }[exe_platform],
+    url = "https://dl.k8s.io/v{version}/bin/{platform}/kubectl".format(
+        platform = k8s_platforms[exe_platform],
         version = kubernetes_version,
+    ),
+) for exe_platform in execution_platforms]
+
+[http_file(
+    name = "kube-apiserver-" + exe_platform,
+    executable = True,
+    integrity = {
+        "aarch64-linux": "sha384-WxGMjjb7BIkfut/eia4AXA9kQ4ijctQsgJnna/V2E5PYm3hTuOFIGXN5mswZvefw",
+        "aarch64-macos": None,
+        "x86_64-linux": "sha384-39mjoYpcc/bvkKNykGo/ctQ2q02hxBb1jeL9o8KbSikMajnmp+AVTEqORgVPCKmJ",
+        "x86_64-macos": None,
+    }[exe_platform],
+    url = "https://dl.k8s.io/v{version}/bin/{platform}/kube-apiserver".format(
+        platform = k8s_platforms[exe_platform],
+        version = kubernetes_version,
+    ),
+) for exe_platform in execution_platforms]
+
+[http_archive(
+    name = "etcd-" + exe_platform,
+    build_file_content = """
+package(
+    default_visibility = ["//visibility:public"],
+)
+alias(
+    name = "etcd",
+    actual = "etcd-v{version}-{platform}/etcd",
+)
+alias(
+    name = "etcdctl",
+    actual = "etcd-v{version}-{platform}/etcdctl",
+)
+alias(
+    name = "etcdutl",
+    actual = "etcd-v{version}-{platform}/etcdutl",
+)
+""".format(
+        platform = {
+            "aarch64-linux": "linux-arm64",
+            "aarch64-macos": "darwin-arm64",
+            "x86_64-linux": "linux-amd64",
+            "x86_64-macos": "darwin-amd64",
+        }[exe_platform],
+        version = etcd_version,
+    ),
+    integrity = {
+        "aarch64-linux": "sha384-h6VRWjDjpQtKO7tLWTnQXIeVPifzEQFIf61wdnquc4P8gceMpEbHl1FTe2edSGj+",
+        "aarch64-macos": "sha384-yna0BVRs3F5LGN41ZBdn/FrkDwgfrdit0oeB1iVHfmSiUVkroePuNSphbrr/1fMY",
+        "x86_64-linux": "sha384-AbVtw0WSuX7Z3f/GGc4WGHS4+PqsLgiHvXtwN7Hu8saCbwFWa+wj/5hCvPgQ9JHD",
+        "x86_64-macos": "sha384-tQeres8rl2gtfhQrb8k9tOUgmO9Ky4I/jCEqPE0Z6AUnCBBaXIz2JniCsx0hOiWh",
+    }[exe_platform],
+    url = "https://github.com/etcd-io/etcd/releases/download/v{version}/etcd-v{version}-{platform}".format(
+        platform = {
+            "aarch64-linux": "linux-arm64.tar.gz",
+            "aarch64-macos": "darwin-arm64.zip",
+            "x86_64-linux": "linux-amd64.tar.gz",
+            "x86_64-macos": "darwin-amd64.zip",
+        }[exe_platform],
+        version = etcd_version,
     ),
 ) for exe_platform in execution_platforms]
 

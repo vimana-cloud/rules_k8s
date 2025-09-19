@@ -24,6 +24,30 @@ native_binary(
 )
 
 native_binary(
+    name = "kube-apiserver",
+    src = format_platform("@kube-apiserver-{}//file"),
+    visibility = ["//visibility:public"],
+)
+
+native_binary(
+    name = "etcd",
+    src = format_platform("@etcd-{}//:etcd"),
+    visibility = ["//visibility:public"],
+)
+
+native_binary(
+    name = "etcdctl",
+    src = format_platform("@etcd-{}//:etcdctl"),
+    visibility = ["//visibility:public"],
+)
+
+native_binary(
+    name = "etcdutl",
+    src = format_platform("@etcd-{}//:etcdutl"),
+    visibility = ["//visibility:public"],
+)
+
+native_binary(
     name = "helm",
     src = format_platform("@helm-{}//:helm"),
     visibility = ["//visibility:public"],

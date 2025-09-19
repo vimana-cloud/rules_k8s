@@ -5,6 +5,7 @@ load("//:private.bzl", "execution_platforms")
 # `{}` is a placeholder for the platform name. See `MODULE.bazel`.
 binaries = [
     "@kubectl-{}//file",
+    "@etcd-{}//:etcd",
     "@helm-{}//:helm",
     "@kustomize-{}//:kustomize",
     "@crictl-{}//:crictl",
@@ -18,6 +19,8 @@ binaries = [
 # so hardcode all possible values.
 hardcoded_binaries = [
     "@cni-plugins-x86_64-linux//:host-local",
+    "@kube-apiserver-x86_64-linux//file",
+    "@kube-apiserver-aarch64-linux//file",
 ]
 
 # Download all remote files for all platforms

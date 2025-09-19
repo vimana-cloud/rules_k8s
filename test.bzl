@@ -95,7 +95,7 @@ k8s_cluster_test = rule(
             # If a rule provides an explicit K8s resources provider, use that.
             # Otherwise, assume all the default outputs are resource files.
             providers = [[K8sResources], []],
-            allow_files = [".json", ".yaml"],
+            allow_files = [".json", ".yaml", ".yml"],
         ),
         "services": attr.string_list_dict(
             doc = "Map gateways names to service domain names." +

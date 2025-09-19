@@ -17,16 +17,27 @@ SetupActions = provider(
 )
 
 def _kubectl_apply_impl(ctx):
+    # If a rule provides an explicit K8s resources provider, use that.
+    # Otherwise, assume all the default outputs are resource files.
+    srcs = [
+        file
+        for src in ctx.attr.srcs
+        for file in (
+            src[K8sResources].files.to_list() if K8sResources in src else src.files.to_list()
+        )
+    ]
+
     runner = ctx.actions.declare_file(ctx.label.name)
     ctx.actions.write(
         output = runner,
         content = "#!/usr/bin/env bash\nexec {} apply{}\n".format(
             shell.quote(ctx.file._kubectl_bin.short_path),
-            "".join([" -f {}".format(shell.quote(src.short_path)) for src in ctx.files.srcs]),
+            "".join([" -f {}".format(shell.quote(src.short_path)) for src in srcs]),
         ),
         is_executable = True,
     )
-    runfiles = ctx.runfiles(files = [ctx.file._kubectl_bin] + ctx.files.srcs)
+
+    runfiles = ctx.runfiles(files = [ctx.file._kubectl_bin] + srcs)
     return [
         DefaultInfo(executable = runner, runfiles = runfiles),
         # Inherit `KUBECONFIG` and `HOME` from the host environment so `kubectl` can function.
@@ -37,10 +48,13 @@ def _kubectl_apply_impl(ctx):
 kubectl_apply = rule(
     executable = True,
     implementation = _kubectl_apply_impl,
-    doc = "Apply a configuration to a resource(s) based on a YAML file.",
+    doc = "Apply a configuration to resource(s) based on a YAML file.",
     attrs = {
         "srcs": attr.label_list(
-            doc = "",
+            doc = "Kubernetes resources YAML or JSON files.",
+            # If a rule provides an explicit K8s resources provider, use that.
+            # Otherwise, assume all the default outputs are resource files.
+            providers = [[K8sResources], []],
             allow_files = [".json", ".yaml", ".yml"],
         ),
         "_kubectl_bin": attr.label(

@@ -16,7 +16,24 @@ SetupActions = provider(
     },
 )
 
-def _kubectl_apply_impl(ctx):
+_kubectl_attrs = {
+    "srcs": attr.label_list(
+        doc = "Kubernetes resources YAML or JSON files.",
+        # If a rule provides an explicit K8s resources provider, use that.
+        # Otherwise, assume all the default outputs are resource files.
+        providers = [[K8sResources], []],
+        allow_files = [".json", ".yaml", ".yml"],
+    ),
+    "_kubectl_bin": attr.label(
+        default = ":kubectl",
+        executable = True,
+        cfg = "exec",
+        allow_single_file = True,
+    ),
+}
+
+def _kubectl_boilerplate(ctx, subcommand):
+    """Logic common to both `kubectl_apply` and `kubectl_delete`."""
     # If a rule provides an explicit K8s resources provider, use that.
     # Otherwise, assume all the default outputs are resource files.
     srcs = [
@@ -30,8 +47,9 @@ def _kubectl_apply_impl(ctx):
     runner = ctx.actions.declare_file(ctx.label.name)
     ctx.actions.write(
         output = runner,
-        content = "#!/usr/bin/env bash\nexec {} apply{}\n".format(
+        content = "#!/usr/bin/env bash\nexec {} {}{}\n".format(
             shell.quote(ctx.file._kubectl_bin.short_path),
+            subcommand,
             "".join([" -f {}".format(shell.quote(src.short_path)) for src in srcs]),
         ),
         is_executable = True,
@@ -44,24 +62,22 @@ def _kubectl_apply_impl(ctx):
         RunEnvironmentInfo(inherited_environment = ["KUBECONFIG", "HOME"]),
     ]
 
+def _kubectl_apply_impl(ctx):
+    return _kubectl_boilerplate(ctx, "apply")
 
 kubectl_apply = rule(
     executable = True,
     implementation = _kubectl_apply_impl,
     doc = "Apply a configuration to resource(s) based on a YAML file.",
-    attrs = {
-        "srcs": attr.label_list(
-            doc = "Kubernetes resources YAML or JSON files.",
-            # If a rule provides an explicit K8s resources provider, use that.
-            # Otherwise, assume all the default outputs are resource files.
-            providers = [[K8sResources], []],
-            allow_files = [".json", ".yaml", ".yml"],
-        ),
-        "_kubectl_bin": attr.label(
-            default = ":kubectl",
-            executable = True,
-            cfg = "exec",
-            allow_single_file = True,
-        ),
-    },
+    attrs = _kubectl_attrs,
+)
+
+def _kubectl_delete_impl(ctx):
+    return _kubectl_boilerplate(ctx, "delete")
+
+kubectl_delete = rule(
+    executable = True,
+    implementation = _kubectl_delete_impl,
+    doc = "Delete resource(s) from a YAML file.",
+    attrs = _kubectl_attrs,
 )

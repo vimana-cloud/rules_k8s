@@ -130,3 +130,9 @@ native_binary(
     src = "@cni-plugins-x86_64-linux//:host-local",
     visibility = ["//visibility:public"],
 )
+
+alias(
+    name = "gateway-api",
+    actual = "@gateway-api//file",
+    visibility = ["//visibility:public"],
+)

@@ -30,6 +30,9 @@ etcd_version = "3.5.21"
 # https://github.com/helm/helm/releases
 helm_version = "3.18.4"
 
+# https://github.com/kubernetes-sigs/gateway-api/releases
+gateway_api_version = "1.4.0"
+
 # https://github.com/containernetworking/plugins/releases
 cni_plugins_version = "1.7.1"
 
@@ -166,6 +169,14 @@ alias(
         version = helm_version,
     ),
 ) for exe_platform in execution_platforms]
+
+http_file(
+    name = "gateway-api",
+    integrity = "sha384-qFJe9RR6XBEZM7cGg2JoqhJWq8U0/uqfSLiWbazmec/+p6G9w9Uu/zW8BLQdIwXH",
+    url = "https://github.com/kubernetes-sigs/gateway-api/releases/download/v{version}/standard-install.yaml".format(
+        version = gateway_api_version,
+    ),
+)
 
 # CNI plugins end up in the node Docker image, so we only need Linux / x86-64.
 http_archive(

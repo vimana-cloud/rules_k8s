@@ -31,7 +31,12 @@ etcd_version = "3.5.21"
 helm_version = "3.18.4"
 
 # https://github.com/kubernetes-sigs/gateway-api/releases
-gateway_api_version = "1.4.0"
+# Must be compatible with `envoy_gateway_version`: https://gateway.envoyproxy.io/news/releases/matrix/
+gateway_api_version = "1.3.0"
+
+# https://github.com/envoyproxy/gateway/releases
+# Must be compatible with `gateway_api_version`: https://gateway.envoyproxy.io/news/releases/matrix/
+envoy_gateway_version = "1.5.3"
 
 # https://github.com/containernetworking/plugins/releases
 cni_plugins_version = "1.7.1"
@@ -171,10 +176,18 @@ alias(
 ) for exe_platform in execution_platforms]
 
 http_file(
-    name = "gateway-api",
-    integrity = "sha384-qFJe9RR6XBEZM7cGg2JoqhJWq8U0/uqfSLiWbazmec/+p6G9w9Uu/zW8BLQdIwXH",
+    name = "gateway-api-crds",
+    integrity = "sha384-tvRXFy6O05AHtUU2B6EnxpW3AWHrG6CVnPeyMVOIbRK4aibaKgimztB+/UME1/eZ",
     url = "https://github.com/kubernetes-sigs/gateway-api/releases/download/v{version}/standard-install.yaml".format(
         version = gateway_api_version,
+    ),
+)
+
+http_file(
+    name = "envoy-gateway-crds",
+    integrity = "sha384-UielAW6YBLgQ9VQA/+y9fdHhzUPE5mfW/ptU+t8LoGRklcK4cVR5q4uD5u4NlwIy",
+    url = "https://github.com/envoyproxy/gateway/releases/download/v{version}/envoy-gateway-crds.yaml".format(
+        version = envoy_gateway_version,
     ),
 )
 

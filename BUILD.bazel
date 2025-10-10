@@ -132,7 +132,13 @@ native_binary(
 )
 
 alias(
-    name = "gateway-api",
-    actual = "@gateway-api//file",
+    name = "gateway-api-crds",
+    actual = "@gateway-api-crds//file",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "envoy-gateway-crds",
+    actual = "@envoy-gateway-crds//file",
     visibility = ["//visibility:public"],
 )

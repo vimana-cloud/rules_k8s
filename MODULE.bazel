@@ -58,7 +58,7 @@ controller_tools_version = "0.19.0"
 
 # https://github.com/kubernetes/minikube/releases
 # https://github.com/vimana-cloud/minikube/releases
-minikube_version = "1.36.0-workd.4"
+minikube_version = "1.36.0-workd.5"
 
 # https://github.com/google/go-containerregistry/releases
 crane_version = "0.20.6"
@@ -325,10 +325,10 @@ exports_files(
 )
 """,
     integrity = {
-        "aarch64-linux": "sha384-IaZ2eAR01PCBA6i0Sf7YNI5akNLPNzG9Fq6pYQlHf/LsSu79E6UsyS3taKOifoIU",
-        "aarch64-macos": "sha384-60gOBY6pTlVX9ug0f+JJsXnCdxpSwtrE2MCxA0iAoT0EkuABzpwAEG9O6uoykV6H",
-        "x86_64-linux": "sha384-9ZT/RiqVL0tZ5kjPZrNF7ai6NfIyhgpGtpl/MkH6gIceE4kp1q6YlhAVHjoxBk9k",
-        "x86_64-macos": "sha384-j5qn10ML1XFm6i84vjYdDeIuK1NzCMAXsttiTPscDiYQZMpSCGnes5pQpXszSoNb",
+        "aarch64-linux": "sha384-EC7gXbQqYB7FTTJ5WrE+wN+uBOtoieHN/itbVniC+QNMYTroT2lisxzupsbQgno1",
+        "aarch64-macos": "sha384-xFeNol9IXUEOIceg9E5ChnJeac/JO8v7QMw/l4XO+Z6F5VbGp0r540ej5g/OZJCq",
+        "x86_64-linux": "sha384-tyMRuSRqcaPXH3a22yWU0uBTwMViCUW6q1ssTBThxB8FXZKVI4r9Uh7/AS+3TjEA",
+        "x86_64-macos": "sha384-NV64MFknFprMoKB0LT76lUfp+AscKweCQdSpeODhhOijwWA/3vyWKtB4JwB3pW2d",
     }[exe_platform],
     url = "https://github.com/vimana-cloud/minikube/releases/download/v{version}/minikube-{platform}.tar.gz".format(
         platform = {

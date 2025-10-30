@@ -19,7 +19,7 @@ the following pre-built binaries:
 - `//:kops`
 - `//:crane`
 - `//:minikube-bin` - The [Vimana fork] of [minikube]
-  with support for the `workd` container runtime.
+  with support for the `vimanad` container runtime.
 - `//:minikube` - Wrapper script around the raw `:minikube-bin` binary
   that makes it invoke `:kubectl` when it searches the `PATH` for "kubectl".
 

@@ -68,7 +68,7 @@ def _kubectl_apply_impl(ctx):
 kubectl_apply = rule(
     executable = True,
     implementation = _kubectl_apply_impl,
-    doc = "Apply a configuration to resource(s) based on a YAML file.",
+    doc = "Apply a configuration to resource(s) in a cluster, based on a YAML file.",
     attrs = _kubectl_attrs,
 )
 
@@ -78,6 +78,6 @@ def _kubectl_delete_impl(ctx):
 kubectl_delete = rule(
     executable = True,
     implementation = _kubectl_delete_impl,
-    doc = "Delete resource(s) from a YAML file.",
+    doc = "Delete resource(s) from a cluster, based on a YAML file.",
     attrs = _kubectl_attrs,
 )

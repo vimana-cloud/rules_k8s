@@ -1,4 +1,5 @@
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
 load("//:private.bzl", "execution_platforms")
 
 # List of binaries supported on all 4 platforms: (Linux + Mac) × (x86-64 + Arm64).
@@ -35,4 +36,11 @@ build_test(
         for binary in binaries
         for platform in execution_platforms
     ] + hardcoded_binaries,
+)
+
+sh_test(
+    name = "image-export-test",
+    srcs = ["image-export-test.sh"],
+    args = ["$(location //:envoy-gateway-helm-export)"],
+    data = ["//:envoy-gateway-helm-export"],
 )

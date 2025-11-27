@@ -8,6 +8,7 @@ bazel_dep(name = "buildifier_prebuilt", version = "8.2.1", dev_dependency = True
 bazel_dep(name = "aspect_bazel_lib", version = "2.21.2")
 bazel_dep(name = "bazel_skylib", version = "1.8.2")
 bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "rules_oci", version = "2.2.6")
 bazel_dep(name = "rules_shell", version = "0.6.1")
 
 # Supported execution platforms for pre-built binaries.
@@ -36,7 +37,12 @@ gateway_api_version = "1.4.0"
 
 # https://github.com/envoyproxy/gateway/releases
 # Must be compatible with `gateway_api_version`: https://gateway.envoyproxy.io/news/releases/matrix/
+# Must match `envoy_gateway_helm_digest`.
 envoy_gateway_version = "1.6.0"
+
+# https://hub.docker.com/r/envoyproxy/gateway-helm/tags
+# Must match `envoy_gateway_version`.
+envoy_gateway_helm_digest = "sha256:905eced000d4b2acb78f802f5d03af32a08d30478808c20d522ffa735476bc5d"
 
 # https://github.com/containernetworking/plugins/releases
 cni_plugins_version = "1.8.0"
@@ -66,6 +72,8 @@ crane_version = "0.20.7"
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_file = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
+
+oci = use_extension("@rules_oci//oci:extensions.bzl", "oci")
 
 k8s_platforms = {
     "aarch64-linux": "linux/arm64",
@@ -154,6 +162,7 @@ helm_platforms = {
     "x86_64-linux": "linux-amd64",
     "x86_64-macos": "darwin-amd64",
 }
+
 [http_archive(
     name = "helm-" + exe_platform,
     build_file_content = """
@@ -189,6 +198,12 @@ http_file(
     url = "https://github.com/envoyproxy/gateway/releases/download/v{version}/envoy-gateway-crds.yaml".format(
         version = envoy_gateway_version,
     ),
+)
+
+oci.pull(
+    name = "envoy-gateway-helm",
+    digest = envoy_gateway_helm_digest,
+    image = "docker.io/envoyproxy/gateway-helm",
 )
 
 # CNI plugins end up in the node Docker image, so we only need Linux / x86-64.
@@ -365,3 +380,8 @@ exports_files(
         version = crane_version,
     ),
 ) for exe_platform in execution_platforms]
+
+use_repo(
+    oci,
+    "envoy-gateway-helm",
+)

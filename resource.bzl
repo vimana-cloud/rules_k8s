@@ -34,6 +34,7 @@ _kubectl_attrs = {
 
 def _kubectl_boilerplate(ctx, subcommand):
     """Logic common to both `kubectl_apply` and `kubectl_delete`."""
+
     # If a rule provides an explicit K8s resources provider, use that.
     # Otherwise, assume all the default outputs are resource files.
     srcs = [

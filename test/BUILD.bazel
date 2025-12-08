@@ -15,6 +15,7 @@ binaries = [
     "@controller-gen-{}//file",
     "@crane-{}//:crane",
     "@minikube-{}//:minikube",
+    "@grpcurl-{}//:grpcurl",
 ]
 
 # These binaries are only available on certain platforms,

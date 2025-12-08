@@ -111,24 +111,15 @@ sh_binary(
     visibility = ["//visibility:public"],
 )
 
+native_binary(
+    name = "grpcurl",
+    src = format_platform("@grpcurl-{}//:grpcurl"),
+    visibility = ["//visibility:public"],
+)
+
 sh_binary(
     name = "tls-generate",
     srcs = ["tls-generate.sh"],
-    visibility = ["//visibility:public"],
-)
-
-# These binaries are expected to end up in Docker containers,
-# so you probably need the x86-64 / Linux version no matter what the execution platform is:
-
-native_binary(
-    name = "crictl-x86_64-linux",
-    src = "@crictl-x86_64-linux//:crictl",
-    visibility = ["//visibility:public"],
-)
-
-native_binary(
-    name = "host-local-x86_64-linux",
-    src = "@cni-plugins-x86_64-linux//:host-local",
     visibility = ["//visibility:public"],
 )
 
@@ -166,4 +157,19 @@ filegroup(
     name = "envoy-gateway-helm.oci.tar",
     srcs = [":envoy-gateway-helm"],
     output_group = "tarball",
+)
+
+# These binaries are expected to end up in Docker containers,
+# so you probably need the x86-64 / Linux version no matter what the execution platform is:
+
+native_binary(
+    name = "crictl-x86_64-linux",
+    src = "@crictl-x86_64-linux//:crictl",
+    visibility = ["//visibility:public"],
+)
+
+native_binary(
+    name = "host-local-x86_64-linux",
+    src = "@cni-plugins-x86_64-linux//:host-local",
+    visibility = ["//visibility:public"],
 )

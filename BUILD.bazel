@@ -20,80 +20,80 @@ exports_files(["test-runner.sh"])
 
 native_binary(
     name = "kubectl",
-    src = format_platform("@kubectl-{}//file"),
+    src = format_platform("@kubectl.{}//file"),
     visibility = ["//visibility:public"],
 )
 
 native_binary(
     name = "kube-apiserver",
-    src = format_platform("@kube-apiserver-{}//file"),
+    src = format_platform("@kube-apiserver.{}//file"),
     visibility = ["//visibility:public"],
 )
 
 native_binary(
     name = "etcd",
-    src = format_platform("@etcd-{}//:etcd"),
+    src = format_platform("@etcd.{}//:etcd"),
     visibility = ["//visibility:public"],
 )
 
 native_binary(
     name = "etcdctl",
-    src = format_platform("@etcd-{}//:etcdctl"),
+    src = format_platform("@etcd.{}//:etcdctl"),
     visibility = ["//visibility:public"],
 )
 
 native_binary(
     name = "etcdutl",
-    src = format_platform("@etcd-{}//:etcdutl"),
+    src = format_platform("@etcd.{}//:etcdutl"),
     visibility = ["//visibility:public"],
 )
 
 native_binary(
     name = "helm",
-    src = format_platform("@helm-{}//:helm"),
+    src = format_platform("@helm.{}//:helm"),
     visibility = ["//visibility:public"],
 )
 
 native_binary(
     name = "kustomize",
-    src = format_platform("@kustomize-{}//:kustomize"),
+    src = format_platform("@kustomize.{}//:kustomize"),
     visibility = ["//visibility:public"],
 )
 
 native_binary(
     name = "crictl",
-    src = format_platform("@crictl-{}//:crictl"),
+    src = format_platform("@crictl.{}//:crictl"),
     visibility = ["//visibility:public"],
 )
 
 native_binary(
     name = "kops",
-    src = format_platform("@kops-{}//file"),
+    src = format_platform("@kops.{}//file"),
     visibility = ["//visibility:public"],
 )
 
 native_binary(
     name = "operator-sdk",
-    src = format_platform("@operator-sdk-{}//file"),
+    src = format_platform("@operator-sdk.{}//file"),
     visibility = ["//visibility:public"],
 )
 
 native_binary(
     name = "controller-gen",
-    src = format_platform("@controller-gen-{}//file"),
+    src = format_platform("@controller-gen.{}//file"),
     visibility = ["//visibility:public"],
 )
 
 native_binary(
     name = "crane",
-    src = format_platform("@crane-{}//:crane"),
+    src = format_platform("@crane.{}//:crane"),
     visibility = ["//visibility:public"],
 )
 
 # The native minikube binary has to be wrapped in a script (see below).
 native_binary(
     name = "minikube-bin",
-    src = format_platform("@minikube-{}//:minikube"),
+    src = format_platform("@minikube.{}//:minikube"),
     visibility = ["//visibility:public"],
 )
 
@@ -113,7 +113,7 @@ sh_binary(
 
 native_binary(
     name = "grpcurl",
-    src = format_platform("@grpcurl-{}//:grpcurl"),
+    src = format_platform("@grpcurl.{}//:grpcurl"),
     visibility = ["//visibility:public"],
 )
 
@@ -163,13 +163,13 @@ filegroup(
 # so you probably need the x86-64 / Linux version no matter what the execution platform is:
 
 native_binary(
-    name = "crictl-x86_64-linux",
-    src = "@crictl-x86_64-linux//:crictl",
+    name = "crictl.x86_64-linux",
+    src = "@crictl.x86_64-linux//:crictl",
     visibility = ["//visibility:public"],
 )
 
 native_binary(
-    name = "host-local-x86_64-linux",
-    src = "@cni-plugins-x86_64-linux//:host-local",
+    name = "host-local.x86_64-linux",
+    src = "@cni-plugins.x86_64-linux//:host-local",
     visibility = ["//visibility:public"],
 )

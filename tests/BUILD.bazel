@@ -5,25 +5,25 @@ load("//:private.bzl", "execution_platforms")
 # List of binaries supported on all 4 platforms: (Linux + Mac) × (x86-64 + Arm64).
 # `{}` is a placeholder for the platform name. See `MODULE.bazel`.
 binaries = [
-    "@kubectl-{}//file",
-    "@etcd-{}//:etcd",
-    "@helm-{}//:helm",
-    "@kustomize-{}//:kustomize",
-    "@crictl-{}//:crictl",
-    "@kops-{}//file",
-    "@operator-sdk-{}//file",
-    "@controller-gen-{}//file",
-    "@crane-{}//:crane",
-    "@minikube-{}//:minikube",
-    "@grpcurl-{}//:grpcurl",
+    "@kubectl.{}//file",
+    "@etcd.{}//:etcd",
+    "@helm.{}//:helm",
+    "@kustomize.{}//:kustomize",
+    "@crictl.{}//:crictl",
+    "@kops.{}//file",
+    "@operator-sdk.{}//file",
+    "@controller-gen.{}//file",
+    "@crane.{}//:crane",
+    "@minikube.{}//:minikube",
+    "@grpcurl.{}//:grpcurl",
 ]
 
 # These binaries are only available on certain platforms,
 # so hardcode all possible values.
 hardcoded_binaries = [
-    "@cni-plugins-x86_64-linux//:host-local",
-    "@kube-apiserver-x86_64-linux//file",
-    "@kube-apiserver-aarch64-linux//file",
+    "@cni-plugins.x86_64-linux//:host-local",
+    "@kube-apiserver.x86_64-linux//file",
+    "@kube-apiserver.aarch64-linux//file",
     "@gateway-api-crds//file",
     "@envoy-gateway-crds//file",
 ]

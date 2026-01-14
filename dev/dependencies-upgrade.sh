@@ -1,13 +1,11 @@
-# Update all Bazel and Rust dependencies in a `MODULE.bazel` file
-# based on information from Bazel Central Registry and crates.io,
-# respectively.
+# Update all Bazel dependencies in a `MODULE.bazel` file
+# based on information from Bazel Central Registry.
 #
 # Arguments:
 # - Path to the `buildozer` executable.
 #
 # Requires:
 # - curl
-# - tail
 # - jq
 
 # Format output only if stderr (2) is a terminal (-t).

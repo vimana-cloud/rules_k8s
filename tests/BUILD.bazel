@@ -14,7 +14,8 @@ binaries = [
     "@operator-sdk.{}//file",
     "@controller-gen.{}//file",
     "@crane.{}//:crane",
-    "@minikube.{}//:minikube",
+    "@kind.{}//file",
+    "@cloud-provider-kind.{}//:cloud-provider-kind",
     "@grpcurl.{}//:grpcurl",
 ]
 

@@ -18,17 +18,12 @@ the following pre-built binaries:
 - `//:crictl`
 - `//:kops`
 - `//:crane`
-- `//:minikube-bin` - The [Vimana fork] of [minikube]
-  with support for the `vimanad` container runtime.
-- `//:minikube` - Wrapper script around the raw `:minikube-bin` binary
-  that makes it invoke `:kubectl` when it searches the `PATH` for "kubectl".
+- `//:kind`
 
 Also provides a custom tool [`//:tls-generate`]
 to generate either self-signed CA credentials or TLS certificates
 using OpenSSL.
 
-[Vimana fork]: https://github.com/vimana-cloud/minikube
-[minikube]: https://minikube.sigs.k8s.io/
 [`//:tls-generate`]: tls-generate.sh
 
 ## Caveats

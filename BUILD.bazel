@@ -90,24 +90,15 @@ native_binary(
     visibility = ["//visibility:public"],
 )
 
-# The native minikube binary has to be wrapped in a script (see below).
 native_binary(
-    name = "minikube-bin",
-    src = format_platform("@minikube.{}//:minikube"),
+    name = "kind",
+    src = format_platform("@kind.{}//file"),
     visibility = ["//visibility:public"],
 )
 
-sh_binary(
-    name = "minikube",
-    srcs = ["minikube-runner.sh"],
-    args = [
-        "$(location :minikube-bin)",
-        "$(location :kubectl)",
-    ],
-    data = [
-        ":kubectl",
-        ":minikube-bin",
-    ],
+alias(
+    name = "cloud-provider-kind",
+    actual = format_platform("@cloud-provider-kind.{}//:cloud-provider-kind"),
     visibility = ["//visibility:public"],
 )
 

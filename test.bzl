@@ -78,7 +78,7 @@ k8s_cluster_test = rule(
     test = True,
     attrs = {
         "test": attr.label(
-            doc = "Test executable to run within the Minikube cluster.",
+            doc = "Test executable to run against the cluster.",
             executable = True,
             allow_files = True,
             cfg = "exec",

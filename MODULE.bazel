@@ -62,9 +62,11 @@ operator_sdk_version = "1.42.0"
 # https://github.com/kubernetes-sigs/controller-tools/releases
 controller_tools_version = "0.19.0"
 
-# https://github.com/kubernetes/minikube/releases
-# https://github.com/vimana-cloud/minikube/releases
-minikube_version = "1.36.0-workd.5"
+# https://github.com/kubernetes-sigs/kind/releases
+kind_version = "0.31.0"
+
+# https://github.com/kubernetes-sigs/cloud-provider-kind/releases
+cloud_provider_kind_version = "0.10.0"
 
 # https://github.com/google/go-containerregistry/releases
 crane_version = "0.20.7"
@@ -334,28 +336,48 @@ exports_files(
     ),
 ) for exe_platform in execution_platforms]
 
-[http_archive(
-    name = "minikube.{}".format(exe_platform),
-    build_file_content = """
-exports_files(
-    ["minikube"],
-    visibility = ["//visibility:public"],
-)
-""",
+[http_file(
+    name = "kind.{}".format(exe_platform),
+    executable = True,
     integrity = {
-        "aarch64-linux": "sha384-EC7gXbQqYB7FTTJ5WrE+wN+uBOtoieHN/itbVniC+QNMYTroT2lisxzupsbQgno1",
-        "aarch64-macos": "sha384-xFeNol9IXUEOIceg9E5ChnJeac/JO8v7QMw/l4XO+Z6F5VbGp0r540ej5g/OZJCq",
-        "x86_64-linux": "sha384-tyMRuSRqcaPXH3a22yWU0uBTwMViCUW6q1ssTBThxB8FXZKVI4r9Uh7/AS+3TjEA",
-        "x86_64-macos": "sha384-NV64MFknFprMoKB0LT76lUfp+AscKweCQdSpeODhhOijwWA/3vyWKtB4JwB3pW2d",
+        "aarch64-linux": "sha384-5ZjjxFWIMT7E0J7HDIAakWrrczl/PgcPDP0ccPFspU7MCOesLXkamjzIDUmYd+Jt",
+        "aarch64-macos": "sha384-bZtxNcJsg+oE4AwGRpykc/oBOgx31Uvxhk8mQAUHBO1XHtrxfHBOATix3NGoHXla",
+        "x86_64-linux": "sha384-AqMpe+mfZH3hwU5OUStu+xIhPCf10KDVrQyDp7c4t3JUDAODg6HE8n21tH0r2AgM",
+        "x86_64-macos": "sha384-sW63+D5t7ylcBTV0F4Al9aglUhsPQW0B4kvNuhXBG/hzUbrseHxId4MYTI+fl44b",
     }[exe_platform],
-    url = "https://github.com/vimana-cloud/minikube/releases/download/v{version}/minikube-{platform}.tar.gz".format(
+    url = "https://github.com/kubernetes-sigs/kind/releases/download/v{version}/kind-{platform}".format(
         platform = {
             "aarch64-linux": "linux-arm64",
             "aarch64-macos": "darwin-arm64",
             "x86_64-linux": "linux-amd64",
             "x86_64-macos": "darwin-amd64",
         }[exe_platform],
-        version = minikube_version,
+        version = kind_version,
+    ),
+) for exe_platform in execution_platforms]
+
+[http_archive(
+    name = "cloud-provider-kind.{}".format(exe_platform),
+    build_file_content = """
+exports_files(
+    ["cloud-provider-kind"],
+    visibility = ["//visibility:public"],
+)
+""",
+    integrity = {
+        "aarch64-linux": "sha384-bLF7ALJWe/96PbVaGv5AtCXfUwDlzarUQLi5PBPaGKwuE/hcUbUEiAeGxycLvPFF",
+        "aarch64-macos": "sha384-qw7mCl88ts5ejFOM48Lul6r+xVEqprHNJVue0xnLI0W28U/pEXXfdg+rPT91/b8s",
+        "x86_64-linux": "sha384-MraztFcfS2qKTbx+WkzcoW9yQAFlGcqiPRBHBm13IJ7Mu7mi6iPrtn+gppQTIB5b",
+        "x86_64-macos": "sha384-QMesjiUobPscScDKij7rg5CUgSvPkVF1gbILeJBoOHAzG+hB9oz+x3E3thn27TVe",
+    }[exe_platform],
+    url = "https://github.com/kubernetes-sigs/cloud-provider-kind/releases/download/v{version}/cloud-provider-kind_{version}_{platform}.tar.gz".format(
+        platform = {
+            "aarch64-linux": "linux_arm64",
+            "aarch64-macos": "darwin_arm64",
+            "x86_64-linux": "linux_amd64",
+            "x86_64-macos": "darwin_amd64",
+        }[exe_platform],
+        version = cloud_provider_kind_version,
     ),
 ) for exe_platform in execution_platforms]
 

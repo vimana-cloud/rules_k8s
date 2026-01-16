@@ -143,7 +143,7 @@ function lookup-external-ip {
   else
     (( attempt >= 5 )) && {
       echo >&2 "Gateway '$gateway' lacks an external IP address after $attempt seconds."
-      echo >&2 "If this is a minikube cluster, make sure 'minikube tunnel' is running."
+      echo >&2 "If this is a Kind cluster, make sure 'cloud-provider-kind' is running."
       return 7
     }
     sleep 1

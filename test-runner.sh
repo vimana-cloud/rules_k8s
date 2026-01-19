@@ -127,28 +127,31 @@ echo >&2 "All pods are ready $(( ready_time - creation_time )) seconds after cre
 # It may take a few seconds to become available after the gateway is created.
 function lookup-external-ip {
   local gateway="$1"
-  local attempt="${2:-0}"
-  local address="$(
-    "$kubectl" get service "$gateway" \
-      --namespace="$namespace" \
-      --output=jsonpath='{.status.loadBalancer.ingress[0].ip}'
-  )"
-  [[ $? != 0 ]] && {
-    echo >&2 "Declared gateway '$gateway' does not exist in the test namespace."
-    return 6
-  }
-  if [ -n "$address" ]
-  then
-    echo "$address"
-  else
-    (( attempt >= 5 )) && {
-      echo >&2 "Gateway '$gateway' lacks an external IP address after $attempt seconds."
-      echo >&2 "If this is a Kind cluster, make sure 'cloud-provider-kind' is running."
+  local start_time=$(date +%s)
+  # Emulate a do-while loop by putting the body logic as a prelude to the condition.
+  while
+    local address="$(
+      "$kubectl" get service "$gateway" \
+        --namespace="$namespace" \
+        --output=jsonpath='{.status.loadBalancer.ingress[0].ip}'
+    )"
+    [[ $? != 0 ]] && {
+      echo >&2 "Declared gateway '$gateway' does not exist in the test namespace."
       return 7
     }
-    sleep 1
-    lookup-external-ip "$gateway" $((attempt + 1))
-  fi
+    [ -n "$address" ] && {
+      echo "$address"
+      return 0
+    }
+    local end_time=$(date +%s)
+    local elapsed_time=$(( end_time - start_time ))
+    (( elapsed_time < 5 ))
+  do
+    sleep 0.5
+  done
+  echo >&2 "Gateway '$gateway' lacks an external IP address after ${elapsed_time} seconds."
+  echo >&2 "If this is a Kind cluster, make sure 'cloud-provider-kind' is running."
+  return 8
 }
 
 # Set up the override file for /etc/hosts, used to configure service routing.
@@ -159,6 +162,9 @@ tmp_hosts="$(mktemp)"
   <<< "$services" "$jq" --raw-output 'to_entries[] | "\(.key)\n\(.value | join(" "))"' \
     | while read -r gateway
   do
+    "$kubectl" --namespace="$namespace" \
+      wait --for=condition=Programmed gateway/"$gateway" --timeout=30s \
+        || exit 6
     address="$(lookup-external-ip "$gateway")"
     status=$?
     [[ $status != 0 ]] && exit $status  # Propagate any error from the function call.
@@ -168,9 +174,12 @@ tmp_hosts="$(mktemp)"
     echo "$address $services"
   done || exit $?  # Propagate any error from the piped subshell.
 } > "$tmp_hosts"
-echo >&2 "Using '$tmp_hosts' to override '/etc/hosts'."
+addressable_time=$(date +%s)
+echo >&2 "All gateways have external addresses" \
+  "$(( addressable_time - ready_time )) seconds after pods ready."
 
 # Run the test in a new mount namespace, with the override file bind-mounted over /etc/hosts.
+echo >&2 "Using '$tmp_hosts' to override '/etc/hosts'."
 cmd="mount --bind '$tmp_hosts' /etc/hosts && echo >&2 'Running test...' && exec '$test'"
 unshare --map-root-user --mount -- bash -c "$cmd"
 test_result=$?
@@ -190,7 +199,7 @@ if (( cleanup ))
 then
   # Disable automatic cleanup, because we're calling it explicitly instead.
   trap - EXIT
-  delete-test-namespace || exit 8
+  delete-test-namespace || exit 9
 fi
 
 exit 0

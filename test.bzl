@@ -96,6 +96,13 @@ k8s_cluster_test = rule(
             # Otherwise, assume all the default outputs are resource files.
             providers = [[K8sResources], []],
             allow_files = [".json", ".yaml", ".yml"],
+            # The platform configuration should not normally affect resources,
+            # however, in cases where resources are both non-deterministic
+            # (e.g. generated TLS certificates)
+            # and read by both the test harness and the test executable
+            # (which would happen if e.g. the test executable needs access to a generated root CA),
+            # it's important that the objects have the same configuration as the executable.
+            cfg = "exec",
         ),
         "services": attr.string_list_dict(
             doc = "Map gateways names to service domain names." +

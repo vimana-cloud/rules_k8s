@@ -49,14 +49,14 @@ def _kubectl_boilerplate(ctx, subcommand):
     ctx.actions.write(
         output = runner,
         content = "#!/usr/bin/env bash\nexec {} {}{}\n".format(
-            shell.quote(ctx.file._kubectl_bin.short_path),
+            shell.quote(ctx.executable._kubectl_bin.short_path),
             subcommand,
             "".join([" -f {}".format(shell.quote(src.short_path)) for src in srcs]),
         ),
         is_executable = True,
     )
 
-    runfiles = ctx.runfiles(files = [ctx.file._kubectl_bin] + srcs)
+    runfiles = ctx.runfiles(files = [ctx.executable._kubectl_bin] + srcs)
     return [
         DefaultInfo(executable = runner, runfiles = runfiles),
         # Inherit `KUBECONFIG` and `HOME` from the host environment so `kubectl` can function.
@@ -81,4 +81,78 @@ kubectl_delete = rule(
     implementation = _kubectl_delete_impl,
     doc = "Delete resource(s) from a cluster, based on a YAML file.",
     attrs = _kubectl_attrs,
+)
+
+def _oras_push_impl(ctx):
+    runner = ctx.actions.declare_file(ctx.label.name)
+    ctx.actions.write(
+        output = runner,
+        content = "#!/usr/bin/env bash\nexec {} {} {} {} {} {}{} \"$@\"\n".format(
+            shell.quote(ctx.executable._oras_push_bin.short_path),
+            shell.quote(ctx.executable._oras_bin.short_path),
+            shell.quote(ctx.file.src.short_path),
+            shell.quote(ctx.attr.repository),
+            shell.quote(ctx.attr.artifact_type),
+            str(len(ctx.attr.remote_tags)),
+            "".join([" {}".format(shell.quote(tag)) for tag in ctx.attr.remote_tags]),
+        ),
+        is_executable = True,
+    )
+
+    runfiles = ctx.runfiles(
+        files = [
+            ctx.executable._oras_push_bin,
+            ctx.executable._oras_bin,
+            ctx.file.src,
+        ],
+    )
+    return [
+        DefaultInfo(executable = runner, runfiles = runfiles),
+        # Inherit the environment variables used to load Docker credential helpers.
+        # ORAS should know what to do with these.
+        # https://docs.docker.com/reference/cli/docker/#environment-variables
+        # https://github.com/docker/cli/pull/6008
+        RunEnvironmentInfo(
+            inherited_environment = ["DOCKER_CONFIG", "DOCKER_AUTH_CONFIG", "HOME"],
+        ),
+    ]
+
+oras_push = rule(
+    executable = True,
+    implementation = _oras_push_impl,
+    doc = "Push an arbitrary file to an OCI registry using ORAS.",
+    attrs = {
+        "src": attr.label(
+            doc = "File to push.",
+            allow_single_file = True,
+        ),
+        "repository": attr.string(
+            doc = "Repository URL where the image will be signed at," +
+                  " e.g. `index.docker.io/<user>/image`." +
+                  " Digests and tags are not allowed." +
+                  " If this attribute is not set," +
+                  " the repository must be passed at runtime via the `--repository` flag.",
+        ),
+        "remote_tags": attr.string_list(
+            doc = "A list of tags to apply to the image after pushing.",
+        ),
+        "artifact_type": attr.string(
+            doc = "Artifact type for the manifest.",
+            default = "application/vnd.unknown.artifact.v1",
+        ),
+        # The ORAS CLI binary.
+        "_oras_bin": attr.label(
+            default = ":oras",
+            executable = True,
+            cfg = "exec",
+            allow_single_file = True,
+        ),
+        # A wrapper script to process command-line arguments before invoking the ORAS binary.
+        "_oras_push_bin": attr.label(
+            default = ":oras-push.sh",
+            executable = True,
+            cfg = "exec",
+            allow_single_file = True,
+        ),
+    },
 )

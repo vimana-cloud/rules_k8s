@@ -68,6 +68,9 @@ kind_version = "0.31.0"
 # https://github.com/kubernetes-sigs/cloud-provider-kind/releases
 cloud_provider_kind_version = "0.10.0"
 
+# https://github.com/oras-project/oras/releases
+oras_version = "1.3.0"
+
 # https://github.com/google/go-containerregistry/releases
 crane_version = "0.20.7"
 
@@ -378,6 +381,31 @@ exports_files(
             "x86_64-macos": "darwin_amd64",
         }[exe_platform],
         version = cloud_provider_kind_version,
+    ),
+) for exe_platform in execution_platforms]
+
+[http_archive(
+    name = "oras.{}".format(exe_platform),
+    build_file_content = """
+exports_files(
+    ["oras"],
+    visibility = ["//visibility:public"],
+)
+""",
+    integrity = {
+        "aarch64-linux": "sha384-x9cHDfoZLCl8kcGQnpaPCzUn0CyDqe6aExUvn664kPRDv6sB+FJIKwwEJbPpwdlf",
+        "aarch64-macos": "sha384-0F+mVGePKbDWlvSynzdzzqW573cG9yDbgVCTT7KDSM7VPlhp4sKJnsnw3OanvXjZ",
+        "x86_64-linux": "sha384-n5fD68ERra5psN60+aAKv6tj/1cozDF84TmlaEPK4OFcbn+/AwqbWBO86cStznBi",
+        "x86_64-macos": "sha384-7roVFvwUKz8zgPX9OAvy3tmzFqnca9VrhwoD1K7Q8pjf7hS8GsAJATKmWctVFwPI",
+    }[exe_platform],
+    url = "https://github.com/oras-project/oras/releases/download/v{version}/oras_{version}_{platform}.tar.gz".format(
+        platform = {
+            "aarch64-linux": "linux_arm64",
+            "aarch64-macos": "darwin_arm64",
+            "x86_64-linux": "linux_amd64",
+            "x86_64-macos": "darwin_amd64",
+        }[exe_platform],
+        version = oras_version,
     ),
 ) for exe_platform in execution_platforms]
 

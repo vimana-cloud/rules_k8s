@@ -13,6 +13,7 @@ binaries = [
     "@kops.{}//file",
     "@operator-sdk.{}//file",
     "@controller-gen.{}//file",
+    "@oras.{}//:oras",
     "@crane.{}//:crane",
     "@kind.{}//file",
     "@cloud-provider-kind.{}//:cloud-provider-kind",

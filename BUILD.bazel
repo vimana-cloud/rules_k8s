@@ -85,6 +85,12 @@ native_binary(
 )
 
 native_binary(
+    name = "oras",
+    src = format_platform("@oras.{}//:oras"),
+    visibility = ["//visibility:public"],
+)
+
+native_binary(
     name = "crane",
     src = format_platform("@crane.{}//:crane"),
     visibility = ["//visibility:public"],

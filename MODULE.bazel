@@ -44,9 +44,6 @@ envoy_gateway_version = "1.6.0"
 # Must match `envoy_gateway_version`.
 envoy_gateway_helm_digest = "sha256:905eced000d4b2acb78f802f5d03af32a08d30478808c20d522ffa735476bc5d"
 
-# https://github.com/containernetworking/plugins/releases
-cni_plugins_version = "1.8.0"
-
 # https://github.com/kubernetes-sigs/kustomize/releases
 kustomize_version = "5.8.0"
 
@@ -212,21 +209,6 @@ oci.pull(
     name = "envoy-gateway-helm",
     digest = envoy_gateway_helm_digest,
     image = "docker.io/envoyproxy/gateway-helm",
-)
-
-# CNI plugins end up in the node Docker image, so we only need Linux / x86-64.
-http_archive(
-    name = "cni-plugins.x86_64-linux",
-    build_file_content = """
-exports_files(
-    ["host-local"],
-    visibility = ["//visibility:public"],
-)
-""",
-    integrity = "sha384-vFbTEvfxOqOdFCTx07oHBmQXHATIoRmgQw8rVax2g1b7HvuBjGsqj+RnHxHO+6KT",
-    url = "https://github.com/containernetworking/plugins/releases/download/v{version}/cni-plugins-linux-amd64-v{version}.tgz".format(
-        version = cni_plugins_version,
-    ),
 )
 
 [http_archive(

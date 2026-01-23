@@ -23,7 +23,6 @@ binaries = [
 # These binaries are only available on certain platforms,
 # so hardcode all possible values.
 hardcoded_binaries = [
-    "@cni-plugins.x86_64-linux//:host-local",
     "@kube-apiserver.x86_64-linux//file",
     "@kube-apiserver.aarch64-linux//file",
     "@gateway-api-crds//file",

@@ -18,6 +18,7 @@ binaries = [
     "@kind.{}//file",
     "@cloud-provider-kind.{}//:cloud-provider-kind",
     "@grpcurl.{}//:grpcurl",
+    "@grpc-plugins.{}//:protoc-gen-grpc_cpp",
 ]
 
 # These binaries are only available on certain platforms,

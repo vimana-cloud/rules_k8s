@@ -74,6 +74,9 @@ crane_version = "0.20.7"
 # https://github.com/fullstorydev/grpcurl/releases
 grpcurl_version = "1.9.3"
 
+# https://github.com/vimana-cloud/grpc/releases
+grpc_plugins_version = "1.76.0"
+
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_file = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
@@ -438,6 +441,34 @@ exports_files(
             "x86_64-macos": "osx_x86_64",
         }[exe_platform],
         version = grpcurl_version,
+    ),
+) for exe_platform in execution_platforms]
+
+[http_archive(
+    name = "grpc-plugins.{}".format(exe_platform),
+    build_file_content = """
+exports_files(
+    [
+        "protoc-gen-grpc_cpp",
+        "protoc-gen-grpc_csharp",
+        "protoc-gen-grpc_node",
+        "protoc-gen-grpc_objective_c",
+        "protoc-gen-grpc_php",
+        "protoc-gen-grpc_python",
+        "protoc-gen-grpc_ruby",
+    ],
+    visibility = ["//visibility:public"],
+)
+""",
+    integrity = {
+        "aarch64-linux": "sha384-kTWiwecnkL0yM/sQ7DgsoTqUguD3cFNsw5Ys+5wGGvfTDsZrmiyfTfdQi3Ijd9wX",
+        "aarch64-macos": "sha384-TJfBdrtCmtkqKjbOFBoZhD7RMuCihi9XIKvq/nmmmdijiTQW3rF7rJGoGCVzmW63",
+        "x86_64-linux": "sha384-kWXOEcPex+emG5NwJMpuwgdYg2M/mZOvi+90DcJZCumarLgKyt6Nf2PToVWP+h12",
+        "x86_64-macos": "sha384-68zmuhMUmxBktMpTRzFa6Jf0jxWaeprlZTdeEoB/NvRqN10Sm8XdALIx2j9zDAXt",
+    }[exe_platform],
+    url = "https://github.com/vimana-cloud/grpc/releases/download/v{version}/protoc-plugins-{platform}.tar.gz".format(
+        platform = exe_platform,
+        version = grpc_plugins_version,
     ),
 ) for exe_platform in execution_platforms]
 

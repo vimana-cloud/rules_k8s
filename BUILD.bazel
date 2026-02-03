@@ -117,6 +117,12 @@ native_binary(
     visibility = ["//visibility:public"],
 )
 
+[native_binary(
+    name = "protoc-gen-grpc_{}".format(language),
+    src = format_platform("@grpc-plugins.{{}}//:protoc-gen-grpc_{}".format(language)),
+    visibility = ["//visibility:public"],
+) for language in ["cpp", "csharp", "node", "objective_c", "php", "python", "ruby"]]
+
 sh_binary(
     name = "tls-generate",
     srcs = ["tls-generate.sh"],

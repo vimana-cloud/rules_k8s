@@ -3,7 +3,7 @@ module(
     version = "0.0.1",
 )
 
-bazel_dep(name = "buildifier_prebuilt", version = "8.2.1.1", dev_dependency = True, repo_name = "buildtools")
+bazel_dep(name = "buildifier_prebuilt", version = "8.2.1.2", dev_dependency = True, repo_name = "buildtools")
 
 bazel_dep(name = "aspect_bazel_lib", version = "2.22.5")
 bazel_dep(name = "bazel_skylib", version = "1.9.0")
@@ -25,7 +25,7 @@ kubernetes_version = "1.35.0"
 
 # To find the best-tested version of etcd for a given version of K8s,
 # check the changelog, e.g.
-# https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.34.md
+# https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.35.md
 etcd_version = "3.6.7"
 
 # https://github.com/helm/helm/releases
@@ -38,11 +38,11 @@ gateway_api_version = "1.4.0"
 # https://github.com/envoyproxy/gateway/releases
 # Must be compatible with `gateway_api_version`: https://gateway.envoyproxy.io/news/releases/matrix/
 # Must match `envoy_gateway_helm_digest`.
-envoy_gateway_version = "1.6.2"
+envoy_gateway_version = "1.6.3"
 
 # https://hub.docker.com/r/envoyproxy/gateway-helm/tags
 # Must match `envoy_gateway_version`.
-envoy_gateway_helm_digest = "sha256:4464aba4c7d432dcbace6317af77a459d0e23c93bce296c9442d657f78014ef7"
+envoy_gateway_helm_digest = "sha256:ec0acd1bdb7ff253e69eaef6a39c56fc43f6a32b475a3bb2184f0ed31f178761"
 
 # https://github.com/kubernetes-sigs/kustomize/releases
 kustomize_version = "5.8.0"

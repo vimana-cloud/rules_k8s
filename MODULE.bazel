@@ -44,6 +44,9 @@ envoy_gateway_version = "1.6.3"
 # Must match `envoy_gateway_version`.
 envoy_gateway_helm_digest = "sha256:ec0acd1bdb7ff253e69eaef6a39c56fc43f6a32b475a3bb2184f0ed31f178761"
 
+# https://quay.io/repository/jetstack/charts/cert-manager?tab=tags
+cert_manager_helm_digest = "sha256:ffd45ca4c55eb33094d55d555283a7742024cf9054b8d065ae2ea493fb6cc489"
+
 # https://github.com/kubernetes-sigs/kustomize/releases
 kustomize_version = "5.8.0"
 
@@ -212,6 +215,12 @@ oci.pull(
     name = "envoy-gateway-helm",
     digest = envoy_gateway_helm_digest,
     image = "docker.io/envoyproxy/gateway-helm",
+)
+
+oci.pull(
+    name = "cert-manager-helm",
+    digest = cert_manager_helm_digest,
+    image = "quay.io/jetstack/charts/cert-manager",
 )
 
 [http_archive(
@@ -474,5 +483,6 @@ exports_files(
 
 use_repo(
     oci,
+    "cert-manager-helm",
     "envoy-gateway-helm",
 )

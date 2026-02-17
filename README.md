@@ -12,19 +12,21 @@ A Bazel module with tools for working with Kubernetes (K8s).
 Downloads and makes available
 the following pre-built binaries:
 
-- `//:kubectl`
-- `//:helm`
-- `//:kustomize`
-- `//:crictl`
-- `//:kops`
+- `//:cloud-provider-kind`
+- `//:controller-gen`
 - `//:crane`
+- `//:crictl`
+- `//:etcd`
+- `//:etcdctl`
+- `//:etcdutl`
+- `//:grpcurl`
+- `//:helm`
 - `//:kind`
-
-Also provides a custom tool [`//:tls-generate`]
-to generate either self-signed CA credentials or TLS certificates
-using OpenSSL.
-
-[`//:tls-generate`]: tls-generate.sh
+- `//:kops`
+- `//:kubectl`
+- `//:kustomize`
+- `//:operator-sdk`
+- `//:oras`
 
 ## Caveats
 

@@ -123,12 +123,6 @@ native_binary(
     visibility = ["//visibility:public"],
 ) for language in ["cpp", "csharp", "node", "objective_c", "php", "python", "ruby"]]
 
-sh_binary(
-    name = "tls-generate",
-    srcs = ["tls-generate.sh"],
-    visibility = ["//visibility:public"],
-)
-
 alias(
     name = "gateway-api-crds",
     actual = "@gateway-api-crds//file",

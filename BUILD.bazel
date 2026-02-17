@@ -1,6 +1,5 @@
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:native_binary.bzl", "native_binary")
-load("@rules_oci//oci:defs.bzl", "oci_load")
 load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 load(":private.bzl", "execution_platforms", "format_platform", "image_export")
 
@@ -142,38 +141,14 @@ sh_binary(
 
 image_export(
     name = "envoy-gateway-helm-export",
-    ocitar = ":envoy-gateway-helm.oci.tar",
+    image = "@envoy-gateway-helm",
+    repo_tags = ["docker.io/envoyproxy/gateway-helm:latest"],
     visibility = ["//visibility:public"],
 )
 
 image_export(
     name = "cert-manager-helm-export",
-    ocitar = ":cert-manager-helm.oci.tar",
-    visibility = ["//visibility:public"],
-)
-
-oci_load(
-    name = "envoy-gateway-helm",
-    image = "@envoy-gateway-helm",
-    repo_tags = ["docker.io/envoyproxy/gateway-helm:latest"],
-)
-
-oci_load(
-    name = "cert-manager-helm",
     image = "@cert-manager-helm",
     repo_tags = ["quay.io/jetstack/charts/cert-manager:latest"],
-)
-
-# https://github.com/bazel-contrib/rules_oci/blob/v2.2.6/docs/load.md#build-outputs
-
-filegroup(
-    name = "envoy-gateway-helm.oci.tar",
-    srcs = [":envoy-gateway-helm"],
-    output_group = "tarball",
-)
-
-filegroup(
-    name = "cert-manager-helm.oci.tar",
-    srcs = [":cert-manager-helm"],
-    output_group = "tarball",
+    visibility = ["//visibility:public"],
 )

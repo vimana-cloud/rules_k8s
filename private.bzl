@@ -1,3 +1,5 @@
+load("@rules_oci//oci:defs.bzl", "oci_load")
+
 # TODO: Figure out how to dedupe this list with `MODULE.bazel`.
 execution_platforms = [
     "aarch64-linux",
@@ -55,7 +57,7 @@ def _image_export_impl(ctx):
 
     return [DefaultInfo(files = depset([output]))]
 
-image_export = rule(
+_image_export = rule(
     implementation = _image_export_impl,
     doc = "Export the contents of a single-layer OCI TAR archive.",
     attrs = {
@@ -74,3 +76,25 @@ image_export = rule(
         _jq_toolchain_type,
     ],
 )
+
+def image_export(name, image, repo_tags, visibility = None):
+    oci_load_name = "{}.load".format(name)
+    oci_load(
+        name = oci_load_name,
+        image = image,
+        repo_tags = repo_tags,
+    )
+
+    filegroup_name = "{}.oci.tar".format(name)
+    # https://github.com/bazel-contrib/rules_oci/blob/v2.2.6/docs/load.md#build-outputs
+    native.filegroup(
+        name = filegroup_name,
+        srcs = [":{}".format(oci_load_name)],
+        output_group = "tarball",
+    )
+
+    _image_export(
+        name = name,
+        ocitar = ":{}".format(filegroup_name),
+        visibility = visibility,
+    )

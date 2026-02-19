@@ -1,5 +1,7 @@
+load("@aspect_bazel_lib//lib:run_binary.bzl", "run_binary")
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:native_binary.bzl", "native_binary")
+load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 load(":private.bzl", "execution_platforms", "format_platform", "image_export")
 
@@ -140,15 +142,51 @@ sh_binary(
 )
 
 image_export(
-    name = "envoy-gateway-helm-export",
-    image = "@envoy-gateway-helm",
+    name = "envoy-gateway-helm-chart",
+    image = "@envoy-gateway-helm-image",
     repo_tags = ["docker.io/envoyproxy/gateway-helm:latest"],
     visibility = ["//visibility:public"],
 )
 
 image_export(
-    name = "cert-manager-helm-export",
-    image = "@cert-manager-helm",
+    name = "cert-manager-helm-chart",
+    image = "@cert-manager-helm-image",
     repo_tags = ["quay.io/jetstack/charts/cert-manager:latest"],
     visibility = ["//visibility:public"],
+)
+
+# Manually extract this Helm chart until Bazel downloader can handle it.
+# https://github.com/helm/helm/issues/31844
+# Uses `run_binary` instead of `genrule`
+# because the latter cannot handle output directories.
+run_binary(
+    name = "external-dns-helm-chart",
+    tool = ":tar",
+    srcs = ["@external-dns-helm-chart//file"],
+    args = [
+        "-C",
+        "$(RULEDIR)",
+        "-xzf",
+        "$(location @external-dns-helm-chart//file)",
+    ],
+    out_dirs = ["external-dns"],
+    visibility = ["//visibility:public"],
+)
+
+# Wrap the system `tar` binary as an executable rule to avoid sourcing a proper toolchain.
+# This is only a crutch until the Bazel downloader can handle Helm charts anyway.
+# And everybody should have `tar` installed on the PATH, right?
+write_file(
+    name = "tar-wrapper",
+    out = "tar-wrapper.sh",
+    content = [
+        "#!/usr/bin/env bash",
+        "exec tar \"$@\"",
+    ],
+    is_executable = True,
+)
+
+sh_binary(
+    name = "tar",
+    srcs = [":tar-wrapper"],
 )

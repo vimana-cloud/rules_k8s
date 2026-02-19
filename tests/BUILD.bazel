@@ -28,6 +28,7 @@ hardcoded_binaries = [
     "@kube-apiserver.aarch64-linux//file",
     "@gateway-api-crds//file",
     "@envoy-gateway-crds//file",
+    "@external-dns-helm-chart//file",
 ]
 
 # Download all remote files for all platforms
@@ -44,6 +45,6 @@ build_test(
 sh_test(
     name = "image-export-test",
     srcs = ["image-export-test.sh"],
-    args = ["$(location //:envoy-gateway-helm-export)"],
-    data = ["//:envoy-gateway-helm-export"],
+    args = ["$(location //:envoy-gateway-helm-chart)"],
+    data = ["//:envoy-gateway-helm-chart"],
 )

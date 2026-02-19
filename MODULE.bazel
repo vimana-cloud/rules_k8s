@@ -47,6 +47,10 @@ envoy_gateway_helm_digest = "sha256:ec0acd1bdb7ff253e69eaef6a39c56fc43f6a32b475a
 # https://quay.io/repository/jetstack/charts/cert-manager?tab=tags
 cert_manager_helm_digest = "sha256:ffd45ca4c55eb33094d55d555283a7742024cf9054b8d065ae2ea493fb6cc489"
 
+# https://github.com/kubernetes-sigs/external-dns/releases
+# Use the Helm chart version (not the release version).
+external_dns_helm_version = "1.20.0"
+
 # https://github.com/kubernetes-sigs/kustomize/releases
 kustomize_version = "5.8.0"
 
@@ -209,18 +213,6 @@ http_file(
     url = "https://github.com/envoyproxy/gateway/releases/download/v{version}/envoy-gateway-crds.yaml".format(
         version = envoy_gateway_version,
     ),
-)
-
-oci.pull(
-    name = "envoy-gateway-helm",
-    digest = envoy_gateway_helm_digest,
-    image = "docker.io/envoyproxy/gateway-helm",
-)
-
-oci.pull(
-    name = "cert-manager-helm",
-    digest = cert_manager_helm_digest,
-    image = "quay.io/jetstack/charts/cert-manager",
 )
 
 [http_archive(
@@ -481,8 +473,30 @@ exports_files(
     ),
 ) for exe_platform in execution_platforms]
 
+# TODO: Use `http_archive` to download and extract.
+#   https://github.com/helm/helm/issues/31844
+http_file(
+    name = "external-dns-helm-chart",
+    integrity = "sha384-pfKzHGEwOh+i3LTLVS5BCg0kyIhxvqiMNmRMqVXiDB/sKp0++xb7F6onMuBlVjDN",
+    url = "https://github.com/kubernetes-sigs/external-dns/releases/download/external-dns-helm-chart-{version}/external-dns-{version}.tgz".format(
+        version = external_dns_helm_version,
+    ),
+)
+
+oci.pull(
+    name = "envoy-gateway-helm-image",
+    digest = envoy_gateway_helm_digest,
+    image = "docker.io/envoyproxy/gateway-helm",
+)
+
+oci.pull(
+    name = "cert-manager-helm-image",
+    digest = cert_manager_helm_digest,
+    image = "quay.io/jetstack/charts/cert-manager",
+)
+
 use_repo(
     oci,
-    "cert-manager-helm",
-    "envoy-gateway-helm",
+    "cert-manager-helm-image",
+    "envoy-gateway-helm-image",
 )

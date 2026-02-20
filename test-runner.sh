@@ -119,13 +119,82 @@ fi
 }
 creation_time=$(date +%s)
 
+# Look up the value of a field of a service by name and JSON field path.
+# Retry for up to 15 seconds
+# since it may take a few seconds to become available after the service is created.
+function lookup-service-field {
+  local service="$1"
+  local jsonpath="$2"
+  local start_time=$(date +%s)
+  # Emulate a do-while loop by putting the body logic as a prelude to the condition.
+  while
+    local value="$(
+      "$kubectl" get service "$service" \
+        --namespace="$namespace" \
+        --output=jsonpath="$jsonpath"
+    )"
+    [[ $? != 0 ]] && {
+      echo >&2 "Declared service '$service' does not exist in the test namespace."
+      return 7
+    }
+    [ -n "$value" ] && {
+      echo "$value"
+      return 0
+    }
+    local end_time=$(date +%s)
+    local elapsed_time=$(( end_time - start_time ))
+    (( elapsed_time < 15 ))
+  do
+    sleep 0.5
+  done
+  echo >&2 "Service '$service' lacks field '$jsonpath' after ${elapsed_time} seconds."
+  echo >&2 "If this is a Kind cluster, make sure 'cloud-provider-kind' is running."
+  return 8
+}
+
+# Add entries mapping test domains to gateway cluster IPs
+# to the internal CoreDNS instance.
+# This enables cert-manager's ACME HTTP-01 self-check to reach solver pods
+# so the gateway can be programmed with its TLS certificates.
+[ "$services" = '{}' ] || {
+  mapfile -t domains < <(<<< "$services" "$jq" --raw-output '.[] | .[]')
+  echo >&2 "Adding DNSEntries for domains: ${domains[@]}"
+
+  <<< "$services" "$jq" --raw-output \
+    'to_entries[] | "\(.key)\n\(.value | map(@sh) | join(" "))"' \
+    | while read -r gateway
+  do
+    address="$(lookup-service-field "$gateway" '{.spec.clusterIP}')" || exit $?
+    read -r domain_names
+    eval "domain_names=($domain_names)"
+    for domain_name in "${domain_names[@]}"
+    do
+      echo """---
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: targets
+spec:
+  endpoints:
+  - dnsName: '${domain_name}'
+    recordTTL: 300
+    recordType: A
+    targets:
+    - '${address}'
+"""
+    done
+  done \
+    | "$kubectl" --namespace="$namespace" apply --filename='-' \
+    || exit $?
+}
+
 # Print logs from every pod to the test log
 "$kubectl" --namespace="$namespace" get pods --output=name \
   | while read -r pod
     do
       # First wait for each pod to be ready.
       "$kubectl" --namespace="$namespace" \
-        wait --for=condition=Ready --timeout=15s "$pod" \
+        wait --for=condition=Ready --timeout=30s "$pod" \
           || exit 5
       # Continuously print logs in the background. It will stop when the namespace is deleted.
       # Store them in the artifacts directory in a text file named after the pod
@@ -136,37 +205,6 @@ creation_time=$(date +%s)
 ready_time=$(date +%s)
 echo >&2 "All pods are ready $(( ready_time - creation_time )) seconds after creation."
 
-# Look up the external IP address of a gateway by name.
-# It may take a few seconds to become available after the gateway is created.
-function lookup-external-ip {
-  local gateway="$1"
-  local start_time=$(date +%s)
-  # Emulate a do-while loop by putting the body logic as a prelude to the condition.
-  while
-    local address="$(
-      "$kubectl" get service "$gateway" \
-        --namespace="$namespace" \
-        --output=jsonpath='{.status.loadBalancer.ingress[0].ip}'
-    )"
-    [[ $? != 0 ]] && {
-      echo >&2 "Declared gateway '$gateway' does not exist in the test namespace."
-      return 7
-    }
-    [ -n "$address" ] && {
-      echo "$address"
-      return 0
-    }
-    local end_time=$(date +%s)
-    local elapsed_time=$(( end_time - start_time ))
-    (( elapsed_time < 5 ))
-  do
-    sleep 0.5
-  done
-  echo >&2 "Gateway '$gateway' lacks an external IP address after ${elapsed_time} seconds."
-  echo >&2 "If this is a Kind cluster, make sure 'cloud-provider-kind' is running."
-  return 8
-}
-
 # Set up the override file for /etc/hosts, used to configure service routing.
 tmp_hosts="$(mktemp)"
 [ "$services" = '{}' ] && echo >&2 "No service routing configured." || {
@@ -176,9 +214,9 @@ tmp_hosts="$(mktemp)"
     | while read -r gateway
   do
     "$kubectl" --namespace="$namespace" \
-      wait --for=condition=Programmed gateway/"$gateway" --timeout=30s \
+      wait --for=condition=Programmed gateway/"$gateway" --timeout=15s \
         || exit 6
-    address="$(lookup-external-ip "$gateway")"
+    address="$(lookup-service-field "$gateway" '{.status.loadBalancer.ingress[0].ip}')"
     status=$?
     [[ $status != 0 ]] && exit $status  # Propagate any error from the function call.
     # Keys and values are printed on separate lines,

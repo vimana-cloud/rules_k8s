@@ -44,10 +44,23 @@ jq={{JQ}}
 artifacts="${TEST_UNDECLARED_OUTPUTS_DIR}"
 
 # Use `jq` to iterate over the JSON-encoded array of setup executables.
-<<< "$setup" "$jq" --raw-output '.[]' | while read -r action
+# Each executable is represented by an object that looks like:
+#     { "path": "../path/to/binary", "env": {"VARNAME": "value"}, "inherited": ["HOME"]}
+<<< "$setup" "$jq" --raw-output '
+  .[] |
+  .path,
+  ( .env | to_entries | map("\(.key | @sh)=\(.value | @sh)") | join(" ") ),
+  ( .inherited | map(@sh) | join(" ") )
+' | while read -r action
 do
-  "$action" || {
-    echo >&2 "Failed while running test setup action."
+  read -r env
+  read -r inherited
+  for key in "${inherited[@]}"
+  do
+    env+=("$(printf '%q' "$key")=$(printf '%q' "${!key}")")
+  done
+  ( [ -z "$env" ] || eval "export $env"; "$action" ) || {
+    echo >&2 "Failed while running test setup action '$action'"
     exit 2
   }
 done || exit $?  # Propagate any error from the piped subshell.
@@ -88,7 +101,7 @@ function delete-test-namespace {
   fi
 }
 
-# if cleanup is enabled, delete the test namespace automatically on early exit.
+# If cleanup is enabled, delete the test namespace automatically on early exit.
 if (( cleanup ))
 then trap delete-test-namespace EXIT
 fi

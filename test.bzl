@@ -5,6 +5,9 @@ load("//:resource.bzl", "K8sResources", "SetupActions")
 
 _jq_toolchain_type = "@aspect_bazel_lib//lib:jq_toolchain_type"
 
+def _setup_action(path, env={}, inherited=[]):
+    return struct(path=path, env=env, inherited=inherited)
+
 def _k8s_cluster_test_impl(ctx):
     # Check that none of the declared services are associated with multiple gateways.
     service_gateways = {}
@@ -26,12 +29,20 @@ def _k8s_cluster_test_impl(ctx):
         if SetupActions in action:
             actions = action[SetupActions]
             for executable in actions.executables.to_list():
-                setup.append(executable.short_path)
+                setup.append(_setup_action(executable.short_path))
             setup_runfiles.append(actions.runfiles)
         else:
-            action = action[DefaultInfo]
-            setup.append(action.files_to_run.executable.short_path)
-            setup_runfiles.append(action.default_runfiles)
+            env = {}
+            inherited = []
+            if RunEnvironmentInfo in action:
+                env = action[RunEnvironmentInfo].environment
+                inherited = action[RunEnvironmentInfo].inherited_environment
+            setup.append(_setup_action(
+                path = action[DefaultInfo].files_to_run.executable.short_path,
+                env = env,
+                inherited = inherited,
+            ))
+            setup_runfiles.append(action[DefaultInfo].default_runfiles)
 
     # If a rule provides an explicit K8s resources provider, use that.
     # Otherwise, assume all the default outputs are resource files.

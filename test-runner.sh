@@ -55,9 +55,12 @@ artifacts="${TEST_UNDECLARED_OUTPUTS_DIR}"
 do
   read -r env
   read -r inherited
+  # `inherited` is a string of @sh-quoted variable names (e.g. `'KUBECONFIG' 'HOME'`).
+  # Use eval to expand the shell quoting into a proper array before iterating.
+  eval "inherited=($inherited)"
   for key in "${inherited[@]}"
   do
-    env+=("$(printf '%q' "$key")=$(printf '%q' "${!key}")")
+    env+=" $(printf '%q' "$key")=$(printf '%q' "${!key}")"
   done
   ( [ -z "$env" ] || eval "export $env"; "$action" ) || {
     echo >&2 "Failed while running test setup action '$action'"

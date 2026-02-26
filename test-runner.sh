@@ -123,7 +123,7 @@ fi
 creation_time=$(date +%s)
 
 # Look up the value of a field of a service by name and JSON field path.
-# Retry for up to 15 seconds
+# Retry for up to 30 seconds
 # since it may take a few seconds to become available after the service is created.
 function lookup-service-field {
   local service="$1"
@@ -146,7 +146,7 @@ function lookup-service-field {
     }
     local end_time=$(date +%s)
     local elapsed_time=$(( end_time - start_time ))
-    (( elapsed_time < 15 ))
+    (( elapsed_time < 30 ))
   do
     sleep 0.5
   done
@@ -197,7 +197,7 @@ spec:
     do
       # First wait for each pod to be ready.
       "$kubectl" --namespace="$namespace" \
-        wait --for=condition=Ready --timeout=30s "$pod" \
+        wait --for=condition=Ready --timeout=60s "$pod" \
           || exit 5
       # Continuously print logs in the background. It will stop when the namespace is deleted.
       # Store them in the artifacts directory in a text file named after the pod
@@ -217,7 +217,7 @@ tmp_hosts="$(mktemp)"
     | while read -r gateway
   do
     "$kubectl" --namespace="$namespace" \
-      wait --for=condition=Programmed gateway/"$gateway" --timeout=15s \
+      wait --for=condition=Programmed gateway/"$gateway" --timeout=60s \
         || exit 6
     address="$(lookup-service-field "$gateway" '{.status.loadBalancer.ingress[0].ip}')"
     status=$?
@@ -231,6 +231,18 @@ tmp_hosts="$(mktemp)"
 addressable_time=$(date +%s)
 echo >&2 "All gateways have external addresses" \
   "$(( addressable_time - ready_time )) seconds after pods ready."
+
+# Wait for all TLS certificates to be issued before running the test.
+# The ACME HTTP-01 solver needs the gateway HTTP listener to be active,
+# so this must come after the gateway is Programmed.
+[ "$services" = '{}' ] && echo >&2 "No certificates to wait for." || {
+  "$kubectl" --namespace="$namespace" \
+    wait --for=condition=Ready --timeout=120s certificate --all \
+      || exit 10
+}
+cert_time=$(date +%s)
+echo >&2 "All certificates are ready" \
+  "$(( cert_time - addressable_time )) seconds after gateways ready."
 
 # Run the test in a new mount namespace, with the override file bind-mounted over /etc/hosts.
 echo >&2 "Using '$tmp_hosts' to override '/etc/hosts'."

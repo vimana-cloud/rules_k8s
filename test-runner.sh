@@ -161,33 +161,35 @@ function lookup-service-field {
 # so the gateway can be programmed with its TLS certificates.
 [ "$services" = '{}' ] || {
   mapfile -t domains < <(<<< "$services" "$jq" --raw-output '.[] | .[]')
-  echo >&2 "Adding DNSEntries for domains: ${domains[@]}"
+  echo >&2 "Adding DNSEndpoints for domains: ${domains[@]}"
 
-  <<< "$services" "$jq" --raw-output \
-    'to_entries[] | "\(.key)\n\(.value | map(@sh) | join(" "))"' \
-    | while read -r gateway
-  do
-    address="$(lookup-service-field "$gateway" '{.spec.clusterIP}')" || exit $?
-    read -r domain_names
-    eval "domain_names=($domain_names)"
-    for domain_name in "${domain_names[@]}"
-    do
-      echo """---
+  # Emit one DNSEndpoint per test with all domains as separate endpoint entries.
+  {
+    echo "\
 apiVersion: externaldns.k8s.io/v1alpha1
 kind: DNSEndpoint
 metadata:
   name: targets
 spec:
-  endpoints:
+  endpoints:"
+    <<< "$services" "$jq" --raw-output \
+      'to_entries[] | "\(.key)\n\(.value | map(@sh) | join(" "))"' \
+      | while read -r gateway
+    do
+      address="$(lookup-service-field "$gateway" '{.spec.clusterIP}')" || exit $?
+      read -r domain_names
+      eval "domain_names=($domain_names)"
+      for domain_name in "${domain_names[@]}"
+      do
+        echo "\
   - dnsName: '${domain_name}'
     recordTTL: 300
     recordType: A
     targets:
-    - '${address}'
-"""
+    - '${address}'"
+      done
     done
-  done \
-    | "$kubectl" --namespace="$namespace" apply --filename='-' \
+  } | "$kubectl" --namespace="$namespace" apply --filename='-' \
     || exit $?
 }
 

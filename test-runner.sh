@@ -30,8 +30,10 @@ test={{TEST}}
 setup={{SETUP}}
 # JSON-encoded array of paths to initial K8s resource files.
 objects={{OBJECTS}}
-# JSON-encoded object mapping gateway names to lists of service names.
-services={{SERVICES}}
+# JSON-encoded object mapping gateway names to lists of domain names.
+gateway_domains={{GATEWAY_DOMAINS}}
+# JSON-encoded object mapping gateway names to proxy service label selectors.
+gateway_service_selectors={{GATEWAY_SERVICE_SELECTORS}}
 # Whether to delete the K8s namespace on exit (1 = yes / 0 = no).
 cleanup={{CLEANUP}}
 # Path to `kubectl` binary.
@@ -91,10 +93,7 @@ namespace="test-$(uuidgen)"
 # In the latter, the cleanup function can cause the test to fail.
 function delete-test-namespace {
   local start_time=$(date +%s)
-  # When Envoy Gateway is running in Gateway Namespace mode,
-  # The time required to delete the test namespace completely dominates the overall test runtime.
-  # TODO: See if this can somehow be sped up.
-  if "$kubectl" delete namespace "$namespace" --timeout=240s
+  if "$kubectl" delete namespace "$namespace" --timeout=30s
   then
     local end_time=$(date +%s)
     echo >&2 "Successfully cleaned up the test namespace in $(( end_time - start_time )) seconds."
@@ -122,22 +121,25 @@ fi
 }
 creation_time=$(date +%s)
 
-# Look up the value of a field of a service by name and JSON field path.
+# Look up the value of a field of a service by namespaced name and JSON path.
 # Retry for up to 30 seconds
 # since it may take a few seconds to become available after the service is created.
-function lookup-service-field {
-  local service="$1"
+function lookup-service {
+  local namespaced_name="$1"
+  local namespace="${namespaced_name%%/*}"
+  local name="${namespaced_name#*/}"
   local jsonpath="$2"
   local start_time=$(date +%s)
   # Emulate a do-while loop by putting the body logic as a prelude to the condition.
+  local value
   while
-    local value="$(
-      "$kubectl" get service "$service" \
+    value="$(
+      "$kubectl" get service "$name" \
         --namespace="$namespace" \
         --output=jsonpath="$jsonpath"
     )"
     [[ $? != 0 ]] && {
-      echo >&2 "Declared service '$service' does not exist in the test namespace."
+      echo >&2 "Service '$name' does not exist in namespace '$namespace'"
       return 7
     }
     [ -n "$value" ] && {
@@ -150,17 +152,62 @@ function lookup-service-field {
   do
     sleep 0.5
   done
-  echo >&2 "Service '$service' lacks field '$jsonpath' after ${elapsed_time} seconds."
+  echo >&2 "Service '${namespace}/${name}' lacks field '$jsonpath' after ${elapsed_time} seconds."
   echo >&2 "If this is a Kind cluster, make sure 'cloud-provider-kind' is running."
   return 8
+}
+
+# Cache for the results of `gateway-proxy`.
+declare -A gateway_proxies
+
+# Map Gateway names to the namespaced names of their associated proxy services.
+# By default, this is just the name and namespace of the gateway itself,
+# unless `gateway_service_selectors` is set for that gateway,
+# in which case the label selectors are used to query for the proxy service
+# (first result used).
+function gateway-proxy {
+  local gateway="$1"
+  if [[ ${gateway_proxies[$gateway]+_} ]]
+  then
+    echo "${gateway_proxies[$gateway]}"
+  else
+    local selector
+    selector="$(
+      <<< "$gateway_service_selectors" "$jq" --raw-output --arg gateway "$gateway" '.[$gateway]'
+    )"
+    if [ $? == 0 ]
+    then
+      local result
+      result="$(
+        "$kubectl" get service \
+          --all-namespaces \
+          --selector="$selector" \
+          --output=jsonpath='{.items[0].metadata.namespace}/{.items[0].metadata.name}'
+      )"
+      local status=$?
+      if [ $status == 0 ]
+      then
+        gateway_proxies["$gateway"]="$result"
+        echo "$result"
+      else
+        echo >&2 "Error looking up proxy service for gateway '${gateway}' with selector '${selector}'"
+        return $status
+      fi
+    else
+      local default="${namespace}/${gateway}"
+      echo >&2 "Assuming proxy service for gateway '${gateway}' is '${default}'"
+      gateway_proxies["$gateway"]="$default"
+      echo "$default"
+    fi
+  fi
 }
 
 # Add entries mapping test domains to gateway cluster IPs
 # to the internal CoreDNS instance.
 # This enables cert-manager's ACME HTTP-01 self-check to reach solver pods
 # so the gateway can be programmed with its TLS certificates.
-[ "$services" = '{}' ] || {
-  mapfile -t domains < <(<<< "$services" "$jq" --raw-output '.[] | .[]')
+[ "$gateway_domains" = '{}' ] || {
+  mapfile -t domains < <(<<< "$gateway_domains" "$jq" --raw-output '.[] | .[]')
   echo >&2 "Adding DNSEndpoints for domains: ${domains[@]}"
 
   # Emit one DNSEndpoint per test with all domains as separate endpoint entries.
@@ -172,11 +219,11 @@ metadata:
   name: targets
 spec:
   endpoints:"
-    <<< "$services" "$jq" --raw-output \
+    <<< "$gateway_domains" "$jq" --raw-output \
       'to_entries[] | "\(.key)\n\(.value | map(@sh) | join(" "))"' \
       | while read -r gateway
     do
-      address="$(lookup-service-field "$gateway" '{.spec.clusterIP}')" || exit $?
+      address="$(lookup-service "$(gateway-proxy "$gateway")" '{.spec.clusterIP}')" || exit $?
       read -r domain_names
       eval "domain_names=($domain_names)"
       for domain_name in "${domain_names[@]}"
@@ -212,22 +259,22 @@ echo >&2 "All pods are ready $(( ready_time - creation_time )) seconds after cre
 
 # Set up the override file for /etc/hosts, used to configure service routing.
 tmp_hosts="$(mktemp)"
-[ "$services" = '{}' ] && echo >&2 "No service routing configured." || {
+[ "$gateway_domains" = '{}' ] && echo >&2 "No service routing configured" || {
   # Use `jq` to print each key (gateway name) on its own line,
   # followed by the values (service names, concatenated with spaces) on the line below.
-  <<< "$services" "$jq" --raw-output 'to_entries[] | "\(.key)\n\(.value | join(" "))"' \
+  <<< "$gateway_domains" "$jq" --raw-output 'to_entries[] | "\(.key)\n\(.value | join(" "))"' \
     | while read -r gateway
   do
     "$kubectl" --namespace="$namespace" \
       wait --for=condition=Programmed gateway/"$gateway" --timeout=60s \
         || exit 6
-    address="$(lookup-service-field "$gateway" '{.status.loadBalancer.ingress[0].ip}')"
+    address="$(lookup-service "$(gateway-proxy "$gateway")" '{.status.loadBalancer.ingress[0].ip}')"
     status=$?
     [[ $status != 0 ]] && exit $status  # Propagate any error from the function call.
     # Keys and values are printed on separate lines,
     # so we know that the total number of lines is a multiple of 2.
-    read -r services
-    echo "$address $services"
+    read -r domains
+    echo "$address $domains"
   done || exit $?  # Propagate any error from the piped subshell.
 } > "$tmp_hosts"
 addressable_time=$(date +%s)
@@ -237,7 +284,7 @@ echo >&2 "All gateways have external addresses" \
 # Wait for all TLS certificates to be issued before running the test.
 # The ACME HTTP-01 solver needs the gateway HTTP listener to be active,
 # so this must come after the gateway is Programmed.
-[ "$services" = '{}' ] && echo >&2 "No certificates to wait for." || {
+[ "$gateway_domains" = '{}' ] && echo >&2 "No certificates to wait for." || {
   "$kubectl" --namespace="$namespace" \
     wait --for=condition=Ready --timeout=120s certificate --all \
       || exit 10

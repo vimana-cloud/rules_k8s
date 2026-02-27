@@ -9,16 +9,16 @@ def _setup_action(path, env={}, inherited=[]):
     return struct(path=path, env=env, inherited=inherited)
 
 def _k8s_cluster_test_impl(ctx):
-    # Check that none of the declared services are associated with multiple gateways.
-    service_gateways = {}
-    for gateway, services in ctx.attr.services.items():
-        for service in services:
-            if service in service_gateways:
+    # Check that none of the declared domains are associated with multiple gateways.
+    domain_gateways = {}
+    for gateway, domains in ctx.attr.gateway_domains.items():
+        for domain in domains:
+            if domain in domain_gateways:
                 fail(
-                    "Service '{}' assigned to conflicting gateways '{}' and '{}'"
-                        .format(service, service_gateways[service], gateway),
+                    "Domain '{}' assigned to conflicting gateways '{}' and '{}'"
+                        .format(domain, domain_gateways[domain], gateway),
                 )
-            service_gateways[service] = gateway
+            domain_gateways[domain] = gateway
 
     # Gather all the setup executables and dependencies.
     # If a rule provides an explicit setup actions provider, use that.
@@ -65,7 +65,8 @@ def _k8s_cluster_test_impl(ctx):
             "{{TEST}}": shell.quote(ctx.executable.test.short_path),
             "{{SETUP}}": shell.quote(json.encode(setup)),
             "{{OBJECTS}}": shell.quote(json.encode(objects)),
-            "{{SERVICES}}": shell.quote(json.encode(ctx.attr.services)),
+            "{{GATEWAY_DOMAINS}}": shell.quote(json.encode(ctx.attr.gateway_domains)),
+            "{{GATEWAY_SERVICE_SELECTORS}}": shell.quote(json.encode(ctx.attr.gateway_service_selectors)),
             "{{CLEANUP}}": str(int(ctx.attr.cleanup)),
             "{{KUBECTL}}": shell.quote(ctx.file._kubectl_bin.short_path),
             "{{JQ}}": shell.quote(jq_toolchain.jqinfo.bin.short_path),
@@ -115,10 +116,17 @@ k8s_cluster_test = rule(
             # it's important that the objects have the same configuration as the executable.
             cfg = "exec",
         ),
-        "services": attr.string_list_dict(
-            doc = "Map gateways names to service domain names." +
-                  " Each gateway must have an external IP address. " +
-                  " The testing harness will set up transparent DNS and routing for each service.",
+        "gateway_domains": attr.string_list_dict(
+            doc = "Map gateways names to domain names." +
+                  " Each gateway must have an external IP address." +
+                  " The testing harness will set up internal DNS and local routing" +
+                  " for each test domain.",
+        ),
+        "gateway_service_selectors": attr.string_dict(
+            doc = "Map each gateway name" +
+                  " to the label selector that should be used to look up its proxy service." +
+                  " If omitted, the proxy service is assumed to have" +
+                  " the same namespace and name as the gateway itself.",
         ),
         "cleanup": attr.bool(
             doc = "Whether to delete the K8s namespace (and all the resources within it)" +

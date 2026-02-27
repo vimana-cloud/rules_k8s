@@ -85,8 +85,8 @@ def image_export(name, image, repo_tags, visibility = None):
         repo_tags = repo_tags,
     )
 
-    filegroup_name = "{}.oci.tar".format(name)
     # https://github.com/bazel-contrib/rules_oci/blob/v2.2.6/docs/load.md#build-outputs
+    filegroup_name = "{}.oci.tar".format(name)
     native.filegroup(
         name = filegroup_name,
         srcs = [":{}".format(oci_load_name)],

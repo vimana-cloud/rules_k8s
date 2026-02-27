@@ -5,8 +5,8 @@ load("//:resource.bzl", "K8sResources", "SetupActions")
 
 _jq_toolchain_type = "@aspect_bazel_lib//lib:jq_toolchain_type"
 
-def _setup_action(path, env={}, inherited=[]):
-    return struct(path=path, env=env, inherited=inherited)
+def _setup_action(path, env = {}, inherited = []):
+    return struct(path = path, env = env, inherited = inherited)
 
 def _k8s_cluster_test_impl(ctx):
     # Check that none of the declared domains are associated with multiple gateways.

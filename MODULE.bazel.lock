@@ -284,7 +284,7 @@
     "@@rules_oci+//oci:extensions.bzl%oci": {
       "general": {
         "bzlTransitiveDigest": "4Mp4ptaDfT7PpI/7ZrEhso5yzNbUbMpTHnYwZKS0nKE=",
-        "usagesDigest": "Akz/vJqFdUDA8QVCqkfsbjj5wYoIJ2AcZSwRQNSgx+M=",
+        "usagesDigest": "F84kSc2mkAr6ddDMIukUlpTYjW4pHt7ExKb7VF5U7i0=",
         "recordedInputs": [
           "REPO_MAPPING:aspect_bazel_lib+,bazel_tools bazel_tools",
           "REPO_MAPPING:bazel_features+,bazel_tools bazel_tools",
@@ -293,7 +293,7 @@
           "REPO_MAPPING:rules_oci+,bazel_skylib bazel_skylib+"
         ],
         "generatedRepoSpecs": {
-          "envoy-gateway-helm_single": {
+          "envoy-gateway-helm-image_single": {
             "repoRuleId": "@@rules_oci+//oci/private:pull.bzl%oci_pull",
             "attributes": {
               "www_authenticate_challenges": {},
@@ -301,21 +301,47 @@
               "registry": "index.docker.io",
               "repository": "envoyproxy/gateway-helm",
               "identifier": "sha256:ec0acd1bdb7ff253e69eaef6a39c56fc43f6a32b475a3bb2184f0ed31f178761",
-              "target_name": "envoy-gateway-helm_single",
+              "target_name": "envoy-gateway-helm-image_single",
               "bazel_tags": []
             }
           },
-          "envoy-gateway-helm": {
+          "envoy-gateway-helm-image": {
             "repoRuleId": "@@rules_oci+//oci/private:pull.bzl%oci_alias",
             "attributes": {
-              "target_name": "envoy-gateway-helm",
+              "target_name": "envoy-gateway-helm-image",
               "www_authenticate_challenges": {},
               "scheme": "https",
               "registry": "index.docker.io",
               "repository": "envoyproxy/gateway-helm",
               "identifier": "sha256:ec0acd1bdb7ff253e69eaef6a39c56fc43f6a32b475a3bb2184f0ed31f178761",
-              "platform": "@@rules_oci+//oci:envoy-gateway-helm_single",
-              "bzlmod_repository": "envoy-gateway-helm",
+              "platform": "@@rules_oci+//oci:envoy-gateway-helm-image_single",
+              "bzlmod_repository": "envoy-gateway-helm-image",
+              "reproducible": true
+            }
+          },
+          "cert-manager-helm-image_single": {
+            "repoRuleId": "@@rules_oci+//oci/private:pull.bzl%oci_pull",
+            "attributes": {
+              "www_authenticate_challenges": {},
+              "scheme": "https",
+              "registry": "quay.io",
+              "repository": "jetstack/charts/cert-manager",
+              "identifier": "sha256:ffd45ca4c55eb33094d55d555283a7742024cf9054b8d065ae2ea493fb6cc489",
+              "target_name": "cert-manager-helm-image_single",
+              "bazel_tags": []
+            }
+          },
+          "cert-manager-helm-image": {
+            "repoRuleId": "@@rules_oci+//oci/private:pull.bzl%oci_alias",
+            "attributes": {
+              "target_name": "cert-manager-helm-image",
+              "www_authenticate_challenges": {},
+              "scheme": "https",
+              "registry": "quay.io",
+              "repository": "jetstack/charts/cert-manager",
+              "identifier": "sha256:ffd45ca4c55eb33094d55d555283a7742024cf9054b8d065ae2ea493fb6cc489",
+              "platform": "@@rules_oci+//oci:cert-manager-helm-image_single",
+              "bzlmod_repository": "cert-manager-helm-image",
               "reproducible": true
             }
           },
@@ -435,7 +461,8 @@
         },
         "moduleExtensionMetadata": {
           "explicitRootModuleDirectDeps": [
-            "envoy-gateway-helm"
+            "envoy-gateway-helm-image",
+            "cert-manager-helm-image"
           ],
           "explicitRootModuleDirectDevDeps": [],
           "useAllRepos": "NO",

@@ -122,7 +122,15 @@ native_binary(
     name = "protoc-gen-grpc_{}".format(language),
     src = format_platform("@grpc-plugins.{{}}//:protoc-gen-grpc_{}".format(language)),
     visibility = ["//visibility:public"],
-) for language in ["cpp", "csharp", "node", "objective_c", "php", "python", "ruby"]]
+) for language in [
+    "cpp",
+    "csharp",
+    "node",
+    "objective_c",
+    "php",
+    "python",
+    "ruby",
+]]
 
 alias(
     name = "gateway-api-crds",
@@ -161,7 +169,6 @@ image_export(
 # because the latter cannot handle output directories.
 run_binary(
     name = "external-dns-helm-chart",
-    tool = ":tar",
     srcs = ["@external-dns-helm-chart//file"],
     args = [
         "-C",
@@ -170,6 +177,7 @@ run_binary(
         "$(location @external-dns-helm-chart//file)",
     ],
     out_dirs = ["external-dns"],
+    tool = ":tar",
     visibility = ["//visibility:public"],
 )
 

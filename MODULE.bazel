@@ -488,13 +488,11 @@ oci.pull(
     digest = envoy_gateway_helm_digest,
     image = "docker.io/envoyproxy/gateway-helm",
 )
-
 oci.pull(
     name = "cert-manager-helm-image",
     digest = cert_manager_helm_digest,
     image = "quay.io/jetstack/charts/cert-manager",
 )
-
 use_repo(
     oci,
     "cert-manager-helm-image",

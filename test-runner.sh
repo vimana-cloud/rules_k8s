@@ -75,13 +75,13 @@ done || exit $?  # Propagate any error from the piped subshell.
 # Print which one it will use to help with debugging.
 # https://stackoverflow.com/a/13864829/5712883
 [ -z "${KUBECONFIG+x}" ] \
-  && echo >&2 "Using default kubernetes client config '$HOME/.kube/config'." \
-  || echo >&2 "Inheriting KUBECONFIG='$KUBECONFIG'."
+  && echo >&2 "Using default kubernetes client config '$HOME/.kube/config'" \
+  || echo >&2 "Inheriting KUBECONFIG='$KUBECONFIG'"
 
 # Create a new K8s test namespace with a unique, randomized name.
 namespace="test-$(uuidgen)"
 "$kubectl" create namespace "$namespace" || {
-  echo >&2 "Failed to create namespace '$namespace'."
+  echo >&2 "Failed to create namespace '$namespace'"
   echo >&2 'Is the cluster running?'
   exit 3
 }
@@ -96,9 +96,9 @@ function delete-test-namespace {
   if "$kubectl" delete namespace "$namespace" --timeout=30s
   then
     local end_time=$(date +%s)
-    echo >&2 "Successfully cleaned up the test namespace in $(( end_time - start_time )) seconds."
+    echo >&2 "Successfully cleaned up the test namespace in $(( end_time - start_time )) seconds"
   else
-    echo >&2 "The pods are probably struggling to shut down."
+    echo >&2 "The pods are probably struggling to shut down"
     false  # Indicate cleanup failed.
   fi
 }
@@ -109,12 +109,12 @@ then trap delete-test-namespace EXIT
 fi
 
 # Create the initial objects for this test, if there are any.
-[ "$objects" = '[]' ] && echo >&2 "No initial objects specified." || {
+[ "$objects" = '[]' ] && echo >&2 "No initial objects specified" || {
   # Use `jq` to iterate over the JSON-encoded array of objects.
   <<< "$objects" "$jq" --raw-output '.[]' | while read -r object
   do
     "$kubectl" --namespace="$namespace" apply --filename="$object" || {
-      echo >&2 "Failed to create initial object '$object'."
+      echo >&2 "Failed to create initial object '$object'"
       exit 4
     }
   done || exit $?  # Propagate any error from the piped subshell.
@@ -152,8 +152,8 @@ function lookup-service {
   do
     sleep 0.5
   done
-  echo >&2 "Service '${namespace}/${name}' lacks field '$jsonpath' after ${elapsed_time} seconds."
-  echo >&2 "If this is a Kind cluster, make sure 'cloud-provider-kind' is running."
+  echo >&2 "Service '${namespace}/${name}' lacks field '$jsonpath' after ${elapsed_time} seconds"
+  echo >&2 "If this is a Kind cluster, make sure 'cloud-provider-kind' is running"
   return 8
 }
 
@@ -255,7 +255,7 @@ spec:
         > "${artifacts}/${pod:4}.logs.txt" &
     done || exit $?  # Propagate any error from the piped subshell.
 ready_time=$(date +%s)
-echo >&2 "All pods are ready $(( ready_time - creation_time )) seconds after creation."
+echo >&2 "All pods are ready $(( ready_time - creation_time )) seconds after creation"
 
 # Set up the override file for /etc/hosts, used to configure service routing.
 tmp_hosts="$(mktemp)"
@@ -279,22 +279,22 @@ tmp_hosts="$(mktemp)"
 } > "$tmp_hosts"
 addressable_time=$(date +%s)
 echo >&2 "All gateways have external addresses" \
-  "$(( addressable_time - ready_time )) seconds after pods ready."
+  "$(( addressable_time - ready_time )) seconds after pods ready"
 
 # Wait for all TLS certificates to be issued before running the test.
 # The ACME HTTP-01 solver needs the gateway HTTP listener to be active,
 # so this must come after the gateway is Programmed.
-[ "$gateway_domains" = '{}' ] && echo >&2 "No certificates to wait for." || {
+[ "$gateway_domains" = '{}' ] && echo >&2 "No certificates to wait for" || {
   "$kubectl" --namespace="$namespace" \
     wait --for=condition=Ready --timeout=120s certificate --all \
       || exit 10
 }
 cert_time=$(date +%s)
 echo >&2 "All certificates are ready" \
-  "$(( cert_time - addressable_time )) seconds after gateways ready."
+  "$(( cert_time - addressable_time )) seconds after gateways ready"
 
 # Run the test in a new mount namespace, with the override file bind-mounted over /etc/hosts.
-echo >&2 "Using '$tmp_hosts' to override '/etc/hosts'."
+echo >&2 "Using '$tmp_hosts' to override '/etc/hosts'"
 cmd="mount --bind '$tmp_hosts' /etc/hosts && echo >&2 'Running test...' && exec '$test'"
 unshare --map-root-user --mount -- bash -c "$cmd"
 test_result=$?

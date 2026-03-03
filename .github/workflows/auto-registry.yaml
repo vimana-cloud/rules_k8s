@@ -1,0 +1,71 @@
+# Whenever the `main` branch changes,
+# deploy a tiny Bazel registry to GitHub Pages
+# containing the most recent handful of commits from `main` as versions.
+#
+# The Bazel registry is a simple static directory with a specific format.
+# https://bazel.build/external/registry
+
+name: Automatic Bazel Registry
+on:
+  push:
+    branches:
+      - 'main'
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+# Only allow a single pass of this workflow to run at a time.
+concurrency:
+  group: auto-registry
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    env:
+      # Generate versions for the most recent 32 commits in `main`.
+      HISTORY: 32
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: ${{ env.HISTORY }}
+
+      - name: Install buildozer
+        run: |
+          go install github.com/bazelbuild/buildtools/buildozer@latest
+          echo "BUILDOZER=$(go env GOPATH)/bin/buildozer" >> "$GITHUB_ENV"
+
+      - name: Generate
+        run: |
+          module='${{ github.event.repository.name }}'
+          remote='${{ github.server_url }}/${{ github.repository }}.git'
+
+          git rev-list --abbrev-commit main | head --lines="$HISTORY" | while read commit
+          do
+            version="${commit:0:7}"
+            echo >&2 "Generating pages for ${version}"
+            directory="registry/modules/${module}/${version}"
+            mkdir --parents "$directory"
+
+            # Extract the contents of MODULE.bazel at this commit.
+            # and overwrite the value of the version string in MODULE.bazel
+            # with the abbreviated commit hash.
+            git show ${commit}:MODULE.bazel > "${directory}/MODULE.bazel"
+            ( cd "$directory" && "$BUILDOZER" "set version ${version}" //MODULE.bazel:%module )
+
+            echo > "${directory}/source.json" \
+              "{\"type\":\"git_repository\",\"remote\":\"${remote}\",\"commit\":\"${commit}\"}"
+          done
+
+      - name: Upload
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: registry/
+
+      - name: Deploy
+        id: deploy
+        uses: actions/deploy-pages@v4

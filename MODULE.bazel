@@ -1,7 +1,4 @@
-module(
-    name = "rules_k8s",
-    version = "0.0.1",
-)
+module(name = "rules_k8s")
 
 bazel_dep(name = "buildifier_prebuilt", version = "8.2.1.2", dev_dependency = True, repo_name = "buildtools")
 

@@ -1,7 +1,9 @@
 load("@aspect_bazel_lib//lib:run_binary.bzl", "run_binary")
 load("@bazel_skylib//lib:selects.bzl", "selects")
+load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load("@bazel_skylib//rules:native_binary.bzl", "native_binary")
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
+load("@protobuf//bazel:proto_library.bzl", "proto_library")
 load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 load(":private.bzl", "execution_platforms", "format_platform", "image_export")
 
@@ -131,6 +133,22 @@ native_binary(
     "python",
     "ruby",
 ]]
+
+# The `proto_library` rule requires the source file to have a `.proto` extension.
+# The Bazel downloader for `http_file` does not use extensions,
+# so give it a proper name by copying the file.
+copy_file(
+    name = "cri-api-source",
+    src = "@cri-api//file",
+    out = "cri-api.proto",
+    visibility = ["//visibility:public"],
+)
+
+proto_library(
+    name = "cri-api-proto",
+    srcs = [":cri-api-source"],
+    visibility = ["//visibility:public"],
+)
 
 alias(
     name = "gateway-api-crds",

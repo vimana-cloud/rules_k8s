@@ -21,11 +21,12 @@ binaries = [
     "@grpc-plugins.{}//:protoc-gen-grpc_cpp",
 ]
 
-# These binaries are only available on certain platforms,
-# so hardcode all possible values.
+# For platform-agnostic files or binaries that are only available on certain platforms,
+# hardcode all possible values.
 hardcoded_binaries = [
     "@kube-apiserver.x86_64-linux//file",
     "@kube-apiserver.aarch64-linux//file",
+    "@cri-api//file",
     "@gateway-api-crds//file",
     "@envoy-gateway-crds//file",
     "@external-dns-helm-chart//file",

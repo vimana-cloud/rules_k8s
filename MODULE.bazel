@@ -5,6 +5,7 @@ bazel_dep(name = "buildifier_prebuilt", version = "8.2.1.2", dev_dependency = Tr
 bazel_dep(name = "aspect_bazel_lib", version = "2.22.5")
 bazel_dep(name = "bazel_skylib", version = "1.9.0")
 bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "protobuf", version = "33.5")
 bazel_dep(name = "rules_oci", version = "2.2.7")
 bazel_dep(name = "rules_shell", version = "0.6.1")
 
@@ -195,6 +196,14 @@ alias(
         version = helm_version,
     ),
 ) for exe_platform in execution_platforms]
+
+http_file(
+    name = "cri-api",
+    integrity = "sha384-8LJD4I4ofO62Yc+yEjqkqR3kjypdyocrpBuAMrrAo6pcMcHCBnGvjQhlMCnuflFA",
+    url = "https://raw.githubusercontent.com/kubernetes/cri-api/refs/tags/kubernetes-{version}/pkg/apis/runtime/v1/api.proto".format(
+        version = kubernetes_version,
+    ),
+)
 
 http_file(
     name = "gateway-api-crds",

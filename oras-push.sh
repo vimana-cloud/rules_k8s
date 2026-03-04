@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 # Push an arbitrary file to an OCI repository using ORAS.
+# Should have a similar API and behavior to
+# https://github.com/bazel-contrib/rules_oci/blob/v2.2.7/oci/private/push.sh.tpl.
 
 set -eo pipefail
 
@@ -23,7 +25,8 @@ shift $(( 5 + tag_count ))
 # Additional arguments for `oras push`.
 options=()
 
-while (( $# > 0 )); do
+while (( $# > 0 ))
+do
   case $1 in
     -t|--tag)
       tags+=( "$2" )
@@ -46,7 +49,8 @@ while (( $# > 0 )); do
   shift
 done
 
-if [[ -z "${repository}" ]]; then
+if [[ -z "${repository}" ]]
+then
   echo >&2 '[ERROR] Repository not set: pass `--repository` flag'
   exit 1
 fi

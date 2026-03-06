@@ -41,24 +41,37 @@ jobs:
 
       - name: Generate
         run: |
-          module='${{ github.event.repository.name }}'
           remote='${{ github.server_url }}/${{ github.repository }}.git'
+          module='registry/modules/${{ github.event.repository.name }}'
+          mkdir --parents "$module"
 
-          git rev-list --abbrev-commit main | head --lines="$HISTORY" | while read commit
+          # Read the most recent commit hashes in the history of the main branch as an array
+          # in reverse order (most recent last).
+          mapfile -t versions < <(
+            git rev-list --abbrev-commit main | head --lines="$HISTORY" | tac
+          )
+
+          # Set up the `metadata.json` file for this module with available versions.
+          versions_json="$(
+            printf '%s\n' "${versions[@]}" | jq --raw-input . | jq --slurp --compact-output .
+          )"
+          echo > "${module}/metadata.json" \
+            "{\"versions\":${versions_json},\"yanked_versions\":{}}"
+
+          for version in "${versions[@]}"
           do
-            version="${commit:0:7}"
             echo >&2 "Generating pages for ${version}"
-            directory="registry/modules/${module}/${version}"
-            mkdir --parents "$directory"
+            directory="${module}/${version}"
+            mkdir "$directory"
 
             # Extract the contents of MODULE.bazel at this commit.
             # and overwrite the value of the version string in MODULE.bazel
             # with the abbreviated commit hash.
-            git show ${commit}:MODULE.bazel > "${directory}/MODULE.bazel"
+            git show ${version}:MODULE.bazel > "${directory}/MODULE.bazel"
             ( cd "$directory" && "$BUILDOZER" "set version ${version}" //MODULE.bazel:%module )
 
             echo > "${directory}/source.json" \
-              "{\"type\":\"git_repository\",\"remote\":\"${remote}\",\"commit\":\"${commit}\"}"
+              "{\"type\":\"git_repository\",\"remote\":\"${remote}\",\"commit\":\"${version}\"}"
           done
 
       - name: Upload

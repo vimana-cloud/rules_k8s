@@ -1,11 +1,11 @@
 module(name = "rules_k8s")
 
-bazel_dep(name = "buildifier_prebuilt", version = "8.2.1.2", dev_dependency = True, repo_name = "buildtools")
+bazel_dep(name = "buildifier_prebuilt", version = "8.5.1", dev_dependency = True, repo_name = "buildtools")
 
 bazel_dep(name = "aspect_bazel_lib", version = "2.22.5")
 bazel_dep(name = "bazel_skylib", version = "1.9.0")
 bazel_dep(name = "platforms", version = "1.0.0")
-bazel_dep(name = "protobuf", version = "33.5")
+bazel_dep(name = "protobuf", version = "34.0.bcr.1")
 bazel_dep(name = "rules_oci", version = "2.3.0")
 bazel_dep(name = "rules_shell", version = "0.6.1")
 
@@ -19,38 +19,38 @@ execution_platforms = [
 ]
 
 # https://github.com/kubernetes/kubernetes/releases
-kubernetes_version = "1.35.0"
+kubernetes_version = "1.35.2"
 
 # To find the best-tested version of etcd for a given version of K8s,
 # check the changelog, e.g.
 # https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.35.md
-etcd_version = "3.6.7"
+etcd_version = "3.6.8"
 
 # https://github.com/helm/helm/releases
-helm_version = "4.1.0"
+helm_version = "4.1.3"
 
 # https://github.com/kubernetes-sigs/gateway-api/releases
 # Must be compatible with `envoy_gateway_version`: https://gateway.envoyproxy.io/news/releases/matrix/
-gateway_api_version = "1.4.0"
+gateway_api_version = "1.4.1"
 
 # https://github.com/envoyproxy/gateway/releases
 # Must be compatible with `gateway_api_version`: https://gateway.envoyproxy.io/news/releases/matrix/
 # Must match `envoy_gateway_helm_digest`.
-envoy_gateway_version = "1.6.3"
+envoy_gateway_version = "1.7.1"
 
 # https://hub.docker.com/r/envoyproxy/gateway-helm/tags
 # Must match `envoy_gateway_version`.
-envoy_gateway_helm_digest = "sha256:ec0acd1bdb7ff253e69eaef6a39c56fc43f6a32b475a3bb2184f0ed31f178761"
+envoy_gateway_helm_digest = "sha256:9c74b9b34f62d5627846e9a399fd67d044a70f7fe184d1022a27174fd2280454"
 
 # https://quay.io/repository/jetstack/charts/cert-manager?tab=tags
-cert_manager_helm_digest = "sha256:ffd45ca4c55eb33094d55d555283a7742024cf9054b8d065ae2ea493fb6cc489"
+cert_manager_helm_digest = "sha256:0ba58efe6e5b3f328f5aa6f688932833b3bc5af99b5b987c8086651217b572ad"
 
 # https://github.com/kubernetes-sigs/external-dns/releases
 # Use the Helm chart version (not the release version).
 external_dns_helm_version = "1.20.0"
 
 # https://github.com/kubernetes-sigs/kustomize/releases
-kustomize_version = "5.8.0"
+kustomize_version = "5.8.1"
 
 # https://github.com/kubernetes-sigs/cri-tools/releases
 cri_tools_version = "1.35.0"
@@ -59,10 +59,10 @@ cri_tools_version = "1.35.0"
 kops_version = "1.34.1"
 
 # https://github.com/operator-framework/operator-sdk/releases
-operator_sdk_version = "1.42.0"
+operator_sdk_version = "1.42.1"
 
 # https://github.com/kubernetes-sigs/controller-tools/releases
-controller_tools_version = "0.20.0"
+controller_tools_version = "0.20.1"
 
 # https://github.com/kubernetes-sigs/kind/releases
 kind_version = "0.31.0"
@@ -71,10 +71,10 @@ kind_version = "0.31.0"
 cloud_provider_kind_version = "0.10.0"
 
 # https://github.com/oras-project/oras/releases
-oras_version = "1.3.0"
+oras_version = "1.3.1"
 
 # https://github.com/google/go-containerregistry/releases
-crane_version = "0.20.7"
+crane_version = "0.21.2"
 
 # https://github.com/fullstorydev/grpcurl/releases
 grpcurl_version = "1.9.3"
@@ -99,10 +99,10 @@ k8s_platforms = {
     name = "kubectl.{}".format(exe_platform),
     executable = True,
     integrity = {
-        "aarch64-linux": "sha384-BlIrC/4WcsKngCvekCcHjsEFOxREUVQXZ8DASbLINWUC5FNApiEr4X8JXmKr0+7z",
-        "aarch64-macos": "sha384-ZC04rME2o7TjVxB7GE7o+fTqWAKumy/u0tE1CQKZW/X3GVGgYsSfccTyKWuZqU/l",
-        "x86_64-linux": "sha384-qCCI+esr2SLh6GKh2I33oTnABYZeydYCD9cXzFUkKCIflP7RaqXfYiNEb1u/DuIC",
-        "x86_64-macos": "sha384-YG7/dYrPDuM/Df1IjdGLJyd9wPO8e/kr8U8UUTCptjCbOnky20PcoiPkFvl1HM6O",
+        "aarch64-linux": "sha384-SJlrWVCwHBpkt7URAHH/0gYbNq/EzZ8vh8W+sZTPT9ZtfcQ2fAMWbi8ktAyqUpEG",
+        "aarch64-macos": "sha384-OVeSb3E4c31U/5A6YN8mzFeKueCA3f/+Z7MkUsIhco7MLOKc0OUHwGDace0Buwb3",
+        "x86_64-linux": "sha384-Z5aThQ6Jpjx22f8mGUEkjtvPpTdn1gjvEZyFCU6HM5GLljJibQUCf+SusjNtKOp5",
+        "x86_64-macos": "sha384-MtO0p6oI5P7dua/ki9jO3+is86yIsOX9raqTOdYS2nxdBD/tSdcJVV8DJ4WRAaq8",
     }[exe_platform],
     url = "https://dl.k8s.io/v{version}/bin/{platform}/kubectl".format(
         platform = k8s_platforms[exe_platform],
@@ -114,9 +114,9 @@ k8s_platforms = {
     name = "kube-apiserver.{}".format(exe_platform),
     executable = True,
     integrity = {
-        "aarch64-linux": "sha384-iNQ8mTEK3gRwdWXhBfxcffhVJrYHufXqtRPTT1XZ+/3NChZtDNeOPXqPiZX4KxDY",
+        "aarch64-linux": "sha384-IscAXC1BEBLdFs4N9MM+kDB+62EqL3L9ctT2KDdioJs+QMIDYBG/bvS9yDB6rSDS",
         "aarch64-macos": None,
-        "x86_64-linux": "sha384-ngqrkiojRGj5CCB9IOQwMbnmAkyceLXXGVahTccOwyyFCTLhQ8RRAf+IajHV1iCp",
+        "x86_64-linux": "sha384-hCvNweSmRVBw3MLEyu/5mW64V0HgLWrzeSz8XatJZBX3h97XfggdpdeXH3eFDxXn",
         "x86_64-macos": None,
     }[exe_platform],
     url = "https://dl.k8s.io/v{version}/bin/{platform}/kube-apiserver".format(
@@ -153,10 +153,10 @@ alias(
         version = etcd_version,
     ),
     integrity = {
-        "aarch64-linux": "sha384-lGsmjy3avzONyywilQr5ApcFxtEFM2tJtqcDhoXURILuskq49CEZb4qw3uxIVDEj",
-        "aarch64-macos": "sha384-waf9R+Sct8xasaRVui9RmmRJSTyhjcw+ovK1mxV3n17NiE1TOt+5Yi0QnI0zj8in",
-        "x86_64-linux": "sha384-pNCNu33aEUqjR9ecRNWQetTkFYlbIl/gDi/NZYYWuRApYrBzb2EMbNBsMcJtrDxz",
-        "x86_64-macos": "sha384-rTb6Uyx8vTiJgDxndA6MOltIZSAkgyOtndQsvROve9Bh21ifgWq64BsabLTNU9K1",
+        "aarch64-linux": "sha384-HFqYkNwnk9JU+z7T6nXW37hQjUbhIs9ZQ07p8GAY53v8wzv+munlC2gANDGkv/po",
+        "aarch64-macos": "sha384-a9rYWttd5jTsMqkXYcqLIjNomnM2MKsnaMhjpsovGxXjMk4L+VfzUTjoU6YREjpY",
+        "x86_64-linux": "sha384-IBJTKZnG/1ukKusljd+QSsZbg4dTvbuFGYx/FiEwMWtrtN9kX0hmVlJtzvq/+9/P",
+        "x86_64-macos": "sha384-ylWt2iCsemn2xOCLz/NaYckm6/eH7B1OCWJN3fnYw60tJzTrm5V99DrcG7PfGyTk",
     }[exe_platform],
     url = "https://github.com/etcd-io/etcd/releases/download/v{version}/etcd-v{version}-{platform}".format(
         platform = {
@@ -186,10 +186,10 @@ alias(
 )
 """.format(platform = helm_platforms[exe_platform]),
     integrity = {
-        "aarch64-linux": "sha384-6Jox7FAjGchOv1FNUMVEiPUP8+CfDwC4RMJCsPYsiHtuQpWB7t5KcvVgd/KDOAZ7",
-        "aarch64-macos": "sha384-J2ZN/vYf77ZSlwQesWpjWGaI4XoeXXO18NBw+y1s071ba4JGvqyAQ7Adj79XKoIL",
-        "x86_64-linux": "sha384-qTfZC1Snbxdu+jDai7A1LvUivDPc8dxWjJn6z+VEoR9DYkoM4TAOne8+SFEcvdqD",
-        "x86_64-macos": "sha384-WAAihyxP05BfzjY8BCFShe+HYUmFkmkJuzPNP1PxYcbxTIyzzGwWlK27XNTuKAip",
+        "aarch64-linux": "sha384-39GafTGMGM0prlXLqyYEuQCg5uWP2Q+A+Mg/yuygeu8PcXHC+ZUl+tqLdwqLwofi",
+        "aarch64-macos": "sha384-UzoKOo/sMptp9ICJD+wkJmFRmUmT7C25mT/+mLMFqNJpkyDTgmi558PxCqZh4BBd",
+        "x86_64-linux": "sha384-HmJPc6ICWva0aZsarqsy6puqKny57d6dCi0OfJdsX0sHXH06YdYo7qeQ0cwoLzD8",
+        "x86_64-macos": "sha384-cR2zOvG0a2MFQJcblNww+kAPdpZIULvsJVKIn9fMQ/yb+eAGn/wXcrq0b1oR7Ikz",
     }[exe_platform],
     url = "https://get.helm.sh/helm-v{version}-{platform}.tar.gz".format(
         platform = helm_platforms[exe_platform],
@@ -207,7 +207,7 @@ http_file(
 
 http_file(
     name = "gateway-api-crds",
-    integrity = "sha384-qFJe9RR6XBEZM7cGg2JoqhJWq8U0/uqfSLiWbazmec/+p6G9w9Uu/zW8BLQdIwXH",
+    integrity = "sha384-gxOzNOYf30QIv23bFgENuZ2zzAZLDacA4F1Rnr3S7bUmZDhwB7RPP0GiIOAuIfCD",
     url = "https://github.com/kubernetes-sigs/gateway-api/releases/download/v{version}/standard-install.yaml".format(
         version = gateway_api_version,
     ),
@@ -215,7 +215,7 @@ http_file(
 
 http_file(
     name = "envoy-gateway-crds",
-    integrity = "sha384-BHum6UiJNW7hQ4V9wcscH9M+A3D9QhO9nwzSPSVDh3hq5hAJbiqt6qwRxjhssJYs",
+    integrity = "sha384-SAQFuiYnqOmggyhbjNwXiCFPX1HTRoJx3psHJNL7WLc4eoFiSJsZaVwl9+JyrU/U",
     url = "https://github.com/envoyproxy/gateway/releases/download/v{version}/envoy-gateway-crds.yaml".format(
         version = envoy_gateway_version,
     ),
@@ -230,10 +230,10 @@ exports_files(
 )
 """,
     integrity = {
-        "aarch64-linux": "sha384-HT6hk+i2vLQrinVboYeZ4cPMNwz4kwnFzI/+jWy4Ul/+LXaJ5I5CaLWB+A13ze4I",
-        "aarch64-macos": "sha384-xJqaTV1cSo8d6RhIhMhGHMXFaeL1SGuMPU34+rckfY/BeLI63Tb3UBhbw/YNXFzZ",
-        "x86_64-linux": "sha384-jAUP7VV5xC6oa0Z5LESS1zZNQ057hsRz2+BaWZN6iAx12El+sqnbj8jfZ+wrkobU",
-        "x86_64-macos": "sha384-8+pc6GTy0KulYYzFAACRSTTlCoMS0s6o7qESqDN8IpoE8QbfmdM/rtVpbvGhjSMk",
+        "aarch64-linux": "sha384-tihjRqOKA6KjpGbQXseFPyHFYYubH8FnGW1pSf4uK+W1plyhgt9VAQ8Afdpo76r0",
+        "aarch64-macos": "sha384-agoGRlUQ3o8YrxU7aJm7loVKfLNvwfsxoKGix492L4QemH6Dg2o1UekBMIGGJc+F",
+        "x86_64-linux": "sha384-xapYdoQXRkRrEhq2+R/cuL7UD01vroWMblPP1WT7xSVvxQZphCziskPjqaKc3T2Y",
+        "x86_64-macos": "sha384-NWPmRCTdzIliy7QFFJADkIyx2nvsCOZhvEOQMqLloVUrilfvQmfnD4y0Zl9cJij2",
     }[exe_platform],
     url = "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv{version}/kustomize_v{version}_{platform}.tar.gz".format(
         platform = {
@@ -295,10 +295,10 @@ exports_files(
     name = "operator-sdk.{}".format(exe_platform),
     executable = True,
     integrity = {
-        "aarch64-linux": "sha384-ZYjrE8CBkoIcN+iTOpP6J51I1RcG5fQ6kkz9T+dJ5rnirSH+1WN0j46JOCRdJv4/",
-        "aarch64-macos": "sha384-WfX4NeZiSkpP0UhOTsmsCl7uqovpt/YHxkCoNWpe0nUjwtzW+qS4sTXdvSa8dvDv",
-        "x86_64-linux": "sha384-RnuObky1U2KAjMBpLZfD2nniqkUmCwKkzX2IRsytDz5mqrGFM17EAnMhWhgzRBrw",
-        "x86_64-macos": "sha384-C/DEReaA/sN8iWuGmxohmYA0s/ty7wG87w+WteaXpJd4RG9AEshfr8kgRu4NQBvq",
+        "aarch64-linux": "sha384-15MSeACbHnVcTjt7WHy48c65Yu1s3UysDlthgk9mY+ABfcQcRp4HeQYtyH+acGqZ",
+        "aarch64-macos": "sha384-jh9AZTVpJSXgZcIzuQlcv2Ycmy4mcbl9NvFjtPkpTQkI5+M2azgMZJxZPr+Ef1Bl",
+        "x86_64-linux": "sha384-h+wtrsoCO5kFhp6Ihsc++pTMpRvG4D1xZBFhUMJKonYjMON+8xeI26hGbTgX/gva",
+        "x86_64-macos": "sha384-CqT2ydVZtK6x049uObRTmZtbMmekLfPe+W+5kldqFlfXiTFm8/Bws75BWt/77PfG",
     }[exe_platform],
     url = "https://github.com/operator-framework/operator-sdk/releases/download/v{version}/operator-sdk_{platform}".format(
         platform = {
@@ -315,10 +315,10 @@ exports_files(
     name = "controller-gen.{}".format(exe_platform),
     executable = True,
     integrity = {
-        "aarch64-linux": "sha384-zQmuQ4CvbfU4oWAanhtbZ0uqs/5Az0EBMyuVwChCjAyhqJ6RxMvvzKk4aBFCuCZA",
-        "aarch64-macos": "sha384-GCgErBqDkQ8pF/UKnZR9L2P2ZeSEwIx4PiwAd4ZHasMkGAnvQfWAJuZtSXMWQvBR",
-        "x86_64-linux": "sha384-qrRBvv/fhcrGbDN6uPBozdhJ/V7KvlseJzRkAnfGMnOI7iywRhtxVZIymz7bucIL",
-        "x86_64-macos": "sha384-9/yeZSggLpKECGCfMfHsD38Yfu36py0sl/UOLePZHOqJDVkz80oNUP+r9cbiDf6N",
+        "aarch64-linux": "sha384-sZcpsXQSZvgb2C0f3d6EIe/G0AtnLZtS9Ewz35XA0+hRhzh1keuuScxba84H52gD",
+        "aarch64-macos": "sha384-MId/MpDmEHcjtLoNFVTrOVfScnNaSsjUa9BevccV/0BEw+QoA1ORf/rySDoC0YEq",
+        "x86_64-linux": "sha384-9VpHbjQCMaawHQkLsJcN4K0NKjfRmabIz7ZJuAp3cbiqQJYE2l9hsD4AjUJ40Xgs",
+        "x86_64-macos": "sha384-rDXgY8UfdeqJy+k0Kh83urGNHohi92Apj7TrzYSqmxlYp7TnDhT+qq7cgk418v1n",
     }[exe_platform],
     url = "https://github.com/kubernetes-sigs/controller-tools/releases/download/v{version}/controller-gen-{platform}".format(
         platform = {
@@ -385,10 +385,10 @@ exports_files(
 )
 """,
     integrity = {
-        "aarch64-linux": "sha384-x9cHDfoZLCl8kcGQnpaPCzUn0CyDqe6aExUvn664kPRDv6sB+FJIKwwEJbPpwdlf",
-        "aarch64-macos": "sha384-0F+mVGePKbDWlvSynzdzzqW573cG9yDbgVCTT7KDSM7VPlhp4sKJnsnw3OanvXjZ",
-        "x86_64-linux": "sha384-n5fD68ERra5psN60+aAKv6tj/1cozDF84TmlaEPK4OFcbn+/AwqbWBO86cStznBi",
-        "x86_64-macos": "sha384-7roVFvwUKz8zgPX9OAvy3tmzFqnca9VrhwoD1K7Q8pjf7hS8GsAJATKmWctVFwPI",
+        "aarch64-linux": "sha384-SSUUL8DsdvYFmhPbYSPKP9YBmuarixNN2apZlCC7lsBojOYOWeKCHGN+m7xL/Dok",
+        "aarch64-macos": "sha384-ju6x5+cxuFJ9IcyD29jDTp9ufdtJQWJ9d1qJLs8b6tTzw0Vk+tz4yMfGg+apOr27",
+        "x86_64-linux": "sha384-9WJsVPn1id9JWVvi0XhKfsknnKOqhRSINW1xGNQaY3Md+ncCgsZ0SwSmyEjgUwFb",
+        "x86_64-macos": "sha384-roFzRygY1+WIlm6tuezvmgMrxYjTnayNslDCM2D9DYm+QWjT3jRXgPnnvA5WcGyf",
     }[exe_platform],
     url = "https://github.com/oras-project/oras/releases/download/v{version}/oras_{version}_{platform}.tar.gz".format(
         platform = {
@@ -410,10 +410,10 @@ exports_files(
 )
 """,
     integrity = {
-        "aarch64-linux": "sha384-KVuVHnH5XxTv4LlCADB+pHnLmoRw7Rhz/gfSVLQguWXsh2hM24/ELbzsBzhegvTu",
-        "aarch64-macos": "sha384-EMXlKoGABMKsFZ5y8wN39X8J/FPcmUR6hLlnIedu1J+ZsxwcCfF64gMvfPE2xOiR",
-        "x86_64-linux": "sha384-7PVWOmKvdH7KD1lRPosQfedN4Dy2BxGYNh5MMFqKpu9Opm44G2y8dM/8vR/ZwKiC",
-        "x86_64-macos": "sha384-Lp3L3RQ85K9/3lRrdZy2ofKCeb6qrsfFfiZrOwcok6Osl6wBaoQ6Ubjv+CH2FUbZ",
+        "aarch64-linux": "sha384-neR5FdJZdTf/F5dNCdN4JnpS6R3t+6Fg8pNfdTdrXgt6sor87yaqhCWLHrsYHega",
+        "aarch64-macos": "sha384-WO8f2zDIY/zEi4+9FhwaG5cZKH0DP74LsY53cSi1LBqc6i1G/SnzSbouwBBllwnS",
+        "x86_64-linux": "sha384-TlXIAB88/0lGvLDe3zcyCymjUmSbPGM6RkzHGmG9Z9nO6SITN6ItYh1d+p65cQxc",
+        "x86_64-macos": "sha384-kWSkAmr7JKG9m3bVnNfn5Gwzq8vG1+HHuRgLFB1GB98h09FDUyhTIyzFUX8tpbEA",
     }[exe_platform],
     url = "https://github.com/google/go-containerregistry/releases/download/v{version}/go-containerregistry_{platform}.tar.gz".format(
         platform = {

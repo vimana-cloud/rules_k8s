@@ -21,14 +21,15 @@ binaries = [
     "@grpc-plugins.{}//:protoc-gen-grpc_cpp",
 ]
 
-# For platform-agnostic files or binaries that are only available on certain platforms,
-# hardcode all possible values.
-hardcoded_binaries = [
+# List of platform-independent downloadable targets.
+universal_downloads = [
     "@kube-apiserver.x86_64-linux//file",
     "@kube-apiserver.aarch64-linux//file",
     "@cri-api//file",
     "@gateway-api-crds//file",
     "@envoy-gateway-crds//file",
+    "@envoy-gateway-helm-image",
+    "@cert-manager-helm-image",
     "@external-dns-helm-chart//file",
 ]
 
@@ -40,7 +41,7 @@ build_test(
         binary.format(platform)
         for binary in binaries
         for platform in execution_platforms
-    ] + hardcoded_binaries,
+    ] + universal_downloads,
 )
 
 sh_test(

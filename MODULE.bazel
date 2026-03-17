@@ -42,7 +42,11 @@ envoy_gateway_version = "1.7.1"
 # Must match `envoy_gateway_version`.
 envoy_gateway_helm_digest = "sha256:9c74b9b34f62d5627846e9a399fd67d044a70f7fe184d1022a27174fd2280454"
 
-# https://quay.io/repository/jetstack/charts/cert-manager?tab=tags
+# https://github.com/cert-manager/cert-manager/releases
+cert_manager_version = "1.20.0"
+
+# https://quay.io/repository/jetstack/charts/cert-manager?tab=tags&tag=latest
+# Must match `cert_manager_version`.
 cert_manager_helm_digest = "sha256:0ba58efe6e5b3f328f5aa6f688932833b3bc5af99b5b987c8086651217b572ad"
 
 # https://github.com/kubernetes-sigs/external-dns/releases
@@ -478,6 +482,14 @@ exports_files(
         version = grpc_plugins_version,
     ),
 ) for exe_platform in execution_platforms]
+
+http_file(
+    name = "cert-manager-crds",
+    integrity = "sha384-FdgTtXGyrVLy6mcJVgQCuw4nBBTfbB2TtANQJQKawqjhzGIfDVv3qzgRpSRMtQdb",
+    url = "https://github.com/cert-manager/cert-manager/releases/download/v{version}/cert-manager.crds.yaml".format(
+        version = cert_manager_version,
+    ),
+)
 
 # TODO: Use `http_archive` to download and extract.
 #   https://github.com/helm/helm/issues/31844

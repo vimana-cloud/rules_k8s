@@ -162,6 +162,12 @@ alias(
     visibility = ["//visibility:public"],
 )
 
+alias(
+    name = "cert-manager-crds",
+    actual = "@cert-manager-crds//file",
+    visibility = ["//visibility:public"],
+)
+
 sh_binary(
     name = "image-export",
     srcs = ["image-export.sh"],

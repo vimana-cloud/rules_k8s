@@ -29,6 +29,7 @@ universal_downloads = [
     "@gateway-api-crds//file",
     "@envoy-gateway-crds//file",
     "@envoy-gateway-helm-image",
+    "@cert-manager-crds//file",
     "@cert-manager-helm-image",
     "@external-dns-helm-chart//file",
 ]

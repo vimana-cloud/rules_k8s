@@ -32,7 +32,7 @@ _kubectl_attrs = {
     ),
 }
 
-def _kubectl_boilerplate(ctx, subcommand):
+def _kubectl_boilerplate(ctx, arguments):
     """Logic common to both `kubectl_apply` and `kubectl_delete`."""
 
     # If a rule provides an explicit K8s resources provider, use that.
@@ -50,7 +50,7 @@ def _kubectl_boilerplate(ctx, subcommand):
         output = runner,
         content = "#!/usr/bin/env bash\nexec {} {}{}\n".format(
             shell.quote(ctx.executable._kubectl_bin.short_path),
-            subcommand,
+            " ".join([shell.quote(argument) for argument in arguments]),
             "".join([" -f {}".format(shell.quote(src.short_path)) for src in srcs]),
         ),
         is_executable = True,
@@ -64,17 +64,32 @@ def _kubectl_boilerplate(ctx, subcommand):
     ]
 
 def _kubectl_apply_impl(ctx):
-    return _kubectl_boilerplate(ctx, "apply")
+    arguments = ["apply"]
+    if ctx.attr.server_side:
+        arguments.append("--server-side")
+    if ctx.attr.force_conflicts:
+        arguments.append("--force-conflicts")
+    return _kubectl_boilerplate(ctx, arguments)
 
 kubectl_apply = rule(
     executable = True,
     implementation = _kubectl_apply_impl,
     doc = "Apply a configuration to resource(s) in a cluster, based on a YAML file.",
-    attrs = _kubectl_attrs,
+    attrs = dict(_kubectl_attrs, **{
+        "server_side": attr.bool(
+            doc = "Use server-side apply.",
+            default = False,
+        ),
+        "force_conflicts": attr.bool(
+            doc = "Force apply even if there are field ownership conflicts." +
+                  " Only effective with server-side apply.",
+            default = False,
+        ),
+    }),
 )
 
 def _kubectl_delete_impl(ctx):
-    return _kubectl_boilerplate(ctx, "delete")
+    return _kubectl_boilerplate(ctx, ["delete"])
 
 kubectl_delete = rule(
     executable = True,

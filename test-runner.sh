@@ -11,6 +11,8 @@
 # which can be configured by setting kubectl's `KUBECONFIG` environment variable.
 # Otherwise, kubectl will try `$HOME/.kube/config` by default.
 
+set -o pipefail
+
 if ! which unshare > /dev/null || [ "$(uname)" != 'Linux' ]
 then
   echo >&2 "This test uses Linux mount namespaces and bind-mounting to configure custom DNS."
@@ -164,7 +166,7 @@ declare -A gateway_proxies
 # By default, this is just the name and namespace of the gateway itself,
 # unless `gateway_service_selectors` is set for that gateway,
 # in which case the label selectors are used to query for the proxy service
-# (first result used).
+# (match must be unique).
 function gateway-proxy {
   local gateway="$1"
   if [[ ${gateway_proxies[$gateway]+_} ]]
@@ -177,22 +179,41 @@ function gateway-proxy {
     )"
     if [ $? == 0 ]
     then
-      local result
-      result="$(
-        "$kubectl" get service \
-          --all-namespaces \
-          --selector="$selector" \
-          --output=jsonpath='{.items[0].metadata.namespace}/{.items[0].metadata.name}'
-      )"
-      local status=$?
-      if [ $status == 0 ]
-      then
-        gateway_proxies["$gateway"]="$result"
-        echo "$result"
-      else
-        echo >&2 "Error looking up proxy service for gateway '${gateway}' with selector '${selector}'"
-        return $status
-      fi
+      local start_time=$(date +%s)
+      local status=0
+      local results
+      while
+        # Read `<namespace>/<name>` for all services that match the selector.
+        results="$(
+          "$kubectl" get service \
+            --all-namespaces \
+            --selector="$selector" \
+            --output=jsonpath='{range .items[*]}{.metadata.namespace}/{.metadata.name}{"\n"}{end}'
+        )"
+        status=$?
+        # Keep trying until kubectl fails (e.g. due to an auth error) or we get some results.
+        [[ $status == 0 ]] && [[ "$results" =~ ^[[:space:]]*$ ]]
+      do
+        local elapsed=$(( $(date +%s) - start_time ))
+        if (( elapsed >= 30 ))
+        then
+          echo >&2 "Error looking up proxy service for gateway '${gateway}'" \
+            "with selector '${selector}' after ${elapsed} seconds"
+          return 8
+        fi
+        sleep 0.5
+      done
+      [[ $status != 0 ]] && return $status  # Propagate any error from kubectl.
+      # Convert results to an array to verify that there is only one matching service.
+      mapfile -t results <<< "$results"
+      [[ ${#results[@]} != 1 ]] && {
+        echo >&2 "Expected a single gateway to match selector '${selector}'" \
+          "but found ${#results[@]}"
+        return 9
+      }
+      # Cache and "return" the result.
+      gateway_proxies["$gateway"]="${results[0]}"
+      echo "${results[0]}"
     else
       local default="${namespace}/${gateway}"
       echo >&2 "Assuming proxy service for gateway '${gateway}' is '${default}'"
@@ -211,24 +232,25 @@ function gateway-proxy {
   echo >&2 "Adding DNSEndpoints for domains: ${domains[@]}"
 
   # Emit one DNSEndpoint per test with all domains as separate endpoint entries.
-  {
-    echo "\
+  endpoint="$(
+    echo '
 apiVersion: externaldns.k8s.io/v1alpha1
 kind: DNSEndpoint
 metadata:
-  name: targets
+  name: test-endpoints
 spec:
-  endpoints:"
+  endpoints:'
     <<< "$gateway_domains" "$jq" --raw-output \
       'to_entries[] | "\(.key)\n\(.value | map(@sh) | join(" "))"' \
       | while read -r gateway
     do
-      address="$(lookup-service "$(gateway-proxy "$gateway")" '{.spec.clusterIP}')" || exit $?
+      service="$(gateway-proxy "$gateway")" || exit $?
+      address="$(lookup-service "$service" '{.spec.clusterIP}')" || exit $?
       read -r domain_names
       eval "domain_names=($domain_names)"
       for domain_name in "${domain_names[@]}"
       do
-        echo "\
+        echo "
   - dnsName: '${domain_name}'
     recordTTL: 300
     recordType: A
@@ -236,8 +258,8 @@ spec:
     - '${address}'"
       done
     done
-  } | "$kubectl" --namespace="$namespace" apply --filename='-' \
-    || exit $?
+  )" || exit $?
+  <<< "$endpoint" "$kubectl" --namespace="$namespace" apply --filename='-'
 }
 
 # Print logs from every pod to the test log
@@ -268,9 +290,8 @@ tmp_hosts="$(mktemp)"
     "$kubectl" --namespace="$namespace" \
       wait --for=condition=Programmed gateway/"$gateway" --timeout=60s \
         || exit 6
-    address="$(lookup-service "$(gateway-proxy "$gateway")" '{.status.loadBalancer.ingress[0].ip}')"
-    status=$?
-    [[ $status != 0 ]] && exit $status  # Propagate any error from the function call.
+    service="$(gateway-proxy "$gateway")" || exit $?
+    address="$(lookup-service "$service" '{.status.loadBalancer.ingress[0].ip}')" || exit $?
     # Keys and values are printed on separate lines,
     # so we know that the total number of lines is a multiple of 2.
     read -r domains
@@ -314,7 +335,7 @@ if (( cleanup ))
 then
   # Disable automatic cleanup, because we're calling it explicitly instead.
   trap - EXIT
-  delete-test-namespace || exit 9
+  delete-test-namespace || exit 11
 fi
 
 exit 0

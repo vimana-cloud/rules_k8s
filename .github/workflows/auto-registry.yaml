@@ -14,10 +14,6 @@ permissions:
   contents: read
   pages: write
   id-token: write
-# Only allow a single pass of this workflow to run at a time.
-concurrency:
-  group: auto-registry
-  cancel-in-progress: true
 
 jobs:
   deploy:
